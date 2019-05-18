@@ -1,0 +1,222 @@
+body {
+    font-size: 100%;
+    line-height: 1.2;
+    padding: 0;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+/* ----------------------- Header und Navigationselemente -----------------------*/
+
+#header {
+    background-image: linear-gradient(#414141 3%, black);
+    display: flex;
+    color: lightgrey;
+    width: 100%;
+    height: 50px;
+    margin-top: 0;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#locationChanger {
+    margin-top: 10px;
+    display: block;
+    width: 150px;
+    height: 30px;
+    background-color: rgba(102, 97, 97, 0.644);
+    border-radius: 20px;
+    text-align: center;
+
+}
+
+#title {
+    font-size: 2.5em;
+    margin-top: 0;
+    display: block;
+    width: 120px;
+}
+
+#loginButton {
+    padding-top: 15px;
+    padding-right: 10px;
+    display: block;
+}
+
+/* parent Element */
+
+#parentDiv {
+    width: 100%;
+    height: 1300px;
+    background: linear-gradient(rgb(114, 250, 216), rgb(16, 60, 95)90%);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ----------------------- Tagesansicht -----------------------*/
+
+#dailyWrapper {
+    display: flex;
+    width: 90%;
+    height: 350px;
+    margin: 10px auto 0 auto;
+    color: white;
+}
+
+#dailyLeft {
+    width: 33.3%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#dailyMiddle {
+    width: 33.3%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#dailyRight {
+    width: 33.3%;
+    text-align: right;
+}
+
+#cityName {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+#countryName {
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+#dataWrapper {
+    background-color: rgba(255, 255, 255, 0.212);
+    color: black;
+    border-radius: 30px;
+    width: 70%;
+    height: 60%;
+    padding: 5%;
+}
+
+#data {
+    font-size: 0.8em;
+    line-height: 2em;
+}
+
+#weatherIcon {
+    margin: auto;
+}
+
+#currentDate {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+#currentTime {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+#degrees {
+    font-size: 3em;
+}
+
+/* ----------------------- 5-Tages-Vorhersage -----------------------*/
+
+#separator {
+    width: 90%;
+    margin: 0 auto;
+    height: 0.1%;
+    border-style: solid thin;
+    border-color: white;
+    background-color: white;
+}
+
+#forecast{
+    width: 90%;
+    height: 200px;    
+    margin:10px auto;
+}
+
+#fiveDaysLabel {
+    width: 100%;
+    font-size:1em;
+}
+
+#fiveDayWrapper {
+    width: 50%;
+    height: 100px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.days {
+    background-color: lightgrey;
+    width: 70px;
+    height: 100%;
+    border-radius:20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#day0 {
+    background-color: white;
+}
+
+.dayInner {
+    margin:auto;
+}
+
+#curve, #curveWeek {
+    width: 70%;
+    margin: 0 auto;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.205);
+    font-size: 3em;
+    text-align: center;
+}
+
+#hourlyWrapper {
+    width: 70%;
+    height: 150%;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    background-color: rgba(255, 255, 255, 0.473);
+   
+}
+#hourlyButtonsWrapper {
+    height: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.hours {
+    width: 12.5%;
+    height: 20px;
+    background-color: lightgrey;
+    text-align: center;
+}
+
+#hours0 {
+    background-color: white;
+}
+
+#hourlyData {
+width: 100%;
+height: 300px;
+text-align: center;
+}
+
+#hourlyDataText {
+    margin:  20px auto;
+}
