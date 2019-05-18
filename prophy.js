@@ -5,7 +5,7 @@ window.addEventListener("load",
     function () {
 
         // Ortsvariablen 
-        var city = "Flensburg";
+        var city = "Ulsnis";
         var country = "de";
 
 
@@ -64,9 +64,6 @@ window.addEventListener("load",
                 }
 
                 // Kurvenansicht über Woche --> Temperatur: als Zeit immer 14:00 auswählen pro Tag
-
-
-
             });
 
 
@@ -82,6 +79,7 @@ window.addEventListener("load",
 
         // Parent Wrapper erstellen
         var parent = $("parentDiv");
+        parent.style.backgroundImage = randBgColour();
 
         // header anpassen
 
@@ -222,10 +220,17 @@ window.addEventListener("load",
             var formattedDate = weekDay + ", " + day + ". " + month + " " + year;
             return formattedDate;
         }
-
+        // Funktion zum Umrechnen von Unix Timestamp in Wochentag
         function convertWeekDay(timestamp) {
             var date = new Date(timestamp * 1000);
             return date.getDay();
+        }
+
+        // Funktion zum zufälligen Aufrufen einer Hintergrundfarbkombination
+        function randBgColour() {
+            var colours = ["#2B79CC,#2BBFCC", "#36E0EF,#0B4680", "#0ACC8A,#1C9EEB","#F49620,#F44720","#C05D94,#331827"];
+            var temp = Math.floor(Math.random() * Math.floor(colours.length));
+            return "linear-gradient(" + colours[temp] + ")";
         }
 
     });
