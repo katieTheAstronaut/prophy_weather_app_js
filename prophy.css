@@ -48,7 +48,7 @@ body {
 #parentDiv {
     width: 100%;
     height: 1300px;
-    background: linear-gradient(rgb(114, 250, 216), rgb(16, 60, 95)90%);
+    background: linear-gradient(rgb(214, 250, 114), rgb(16, 60, 95)90%);
     display: flex;
     flex-direction: column;
 }
