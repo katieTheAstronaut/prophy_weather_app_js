@@ -24,8 +24,8 @@ body {
     display: block;
     width: 150px;
     height: 30px;
-    background-color: rgba(102, 97, 97, 0.644);
-    border-radius: 20px;
+    /* background-color: rgba(102, 97, 97, 0.644);
+    border-radius: 20px; */
     text-align: center;
 }
 
@@ -46,12 +46,12 @@ body {
     width: 30px;
 }
 
-#navWrapper{
+#navWrapper {
     width: 150px;
-    display:flex;
+    display: flex;
 }
 
-#logoutBtn{
+#logoutBtn {
     height: 30px;
     width: 30px;
     padding-left: 20px;
@@ -60,16 +60,16 @@ body {
 /* Nutzermenü */
 
 #navMenu {
-height: 100px;
-width:100px;
-background-color: rgb(231, 231, 231);
-box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-position: absolute;
-right:20px;
+    height: 100px;
+    width: 100px;
+    background-color: rgb(231, 231, 231);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    right: 20px;
 }
 
-#editProfile,#deleteUser {
-padding: 5px 10px;
+#editProfile, #deleteUser {
+    padding: 5px 10px;
 }
 
 /* parent Element */
@@ -373,5 +373,57 @@ padding: 5px 10px;
     width: 30%;
     font-size: 0.5em;
     margin: 2%
+}
 
+/* ----------------------- Such-Elemente -----------------------*/
+
+#searchMsg {
+    font-size: 1.3em;
+    text-align: center;
+    margin: 50px auto;
+}
+
+#searchContainer {
+    background-color: white;
+    opacity: 0.8;
+    width: 300px;
+    height: 300px;
+    border-radius: 50px;
+    margin: 0 auto;
+    text-align: center;
+    background-image: linear-gradient(-225deg, #FFE6FA 50%, #E3FDF5 50%);
+}
+
+#searchTitleWrapper {
+    padding-top: 20px;
+    height: 50px;
+}
+
+#searchTitle {
+    color: black;
+    font-size: 2em;
+}
+
+#searchPlace, #searchZip, #searchBtn {
+    height: 30px;
+    width: 70%;
+    border-radius: 5px;
+    border: none;
+    margin-top: 2%;
+}
+
+#searchCoordLo,#searchCoordLa {
+    height: 30px;
+    width: 34%;
+    border-radius: 5px;
+    border: none;
+    margin-top: 2%;
+    font-size: 0.6em;
+}
+#searchCoordLo{
+    margin-right:2%
+}
+
+#searchBtn {
+    margin-top: 5%;
 }

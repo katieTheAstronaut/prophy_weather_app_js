@@ -4,7 +4,9 @@ window.addEventListener("load",
 
     function () {
 
-        // Ortsvariablen 
+        // Ortsvariablen
+        const apiKey = "27545a642fad3717f02bac70d150c024";
+        const weatherUrl = "http://api.openweathermap.org/data/2.5/weather";
         var city = "Ulsnis";
         var country = "de";
         var loggedInUser;
@@ -15,6 +17,103 @@ window.addEventListener("load",
 
         // Bei Start der Anwendung wird der Startbildschirm aufgerufen
         callHomeScreen();
+
+        /* ----------------------- Ortsuche -----------------------*/
+
+        $("locationChanger").addEventListener("click", function () {
+            searchScreen();
+        })
+
+        function searchScreen() {
+            clearScreen();
+
+            var parent = $("parentDiv");
+            newDiv("searchWrapper", parent);
+            newDiv("searchMsg", searchWrapper);
+            $("searchMsg").textContent = "Finde die Wetterdaten für einen bestimmten Ort:";
+            newDiv("searchContainer", searchWrapper);
+            newDiv("searchTitleWrapper", searchContainer);
+            newDiv("searchTitle", searchTitleWrapper);
+            $("searchTitle").textContent = "Suche";
+
+            // Eingabefeld für Ort
+            newDiv("searchPlaceCont", searchContainer);
+            var searchPlace = document.createElement("input");
+            searchPlace.type = "text";
+            searchPlace.id = "searchPlace";
+            searchPlace.required = true;
+            searchPlace.placeholder = "Ort"
+            searchPlaceCont.appendChild(searchPlace);
+
+            // Eingabefeld für Postleitzahl
+            var searchZip = document.createElement("input");
+            searchZip.type = "text";
+            searchZip.id = "searchZip";
+            searchZip.required = true;
+            searchZip.placeholder = "Postleizahl"
+            searchPlaceCont.appendChild(searchZip);
+
+            // Eingabefelder für Koordinaten (Länge & Breite)
+            var searchCoordLo = document.createElement("input");
+            searchCoordLo.type = "text";
+            searchCoordLo.id = "searchCoordLo";
+            searchCoordLo.required = true;
+            searchCoordLo.placeholder = "Koordinaten (Länge)";
+            searchPlaceCont.appendChild(searchCoordLo);
+
+            var searchCoordLa = document.createElement("input");
+            searchCoordLa.type = "text";
+            searchCoordLa.id = "searchCoordLa";
+            searchCoordLa.required = true;
+            searchCoordLa.placeholder = "Koordinaten (Breite)";
+            searchPlaceCont.appendChild(searchCoordLa);
+
+            // Suche-Button
+            var searchBtn = document.createElement("button");
+            searchBtn.id = "searchBtn";
+            searchBtn.textContent = "Suche";
+            searchBtn.addEventListener("click", function () {
+                search();
+            })
+            searchPlaceCont.appendChild(searchBtn);
+
+        }
+
+        // Funktion um den passenden Ort zu den Suchparametern zu finden
+        function search() {
+
+            var searchQuery;
+
+            // Prüfen ob überhaupt ein Feld ausgefüllt wurde
+            if (($("searchPlace").value === "") && ($("searchZip").value === "") && ($("searchCoordLo").value === "")) {
+                alert("Bitte gib einen vollständigen Suchwert an!")
+            } else if ($("searchPlace").value !== "") {
+                searchQuery = "q=" + $("searchPlace").value;
+            } else if ($("searchZip").value !== "") {
+                searchQuery = "zip=" + $("searchZip").value;
+            } else if ($("searchCoordLo").value !== "" && $("searchCoordLa").value !== "") {
+                searchQuery = "lat=" + $("searchCoordLa").value + "&lon=" + $("searchCoordLo").value;
+            }
+
+            var searchUrl = `${weatherUrl}?` + searchQuery + `&appid=${apiKey}`;
+            console.log(searchUrl);
+
+
+            ////
+            ////FINISH HERE
+
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         /* ----------------------- Login und Registrierung -----------------------*/
 
@@ -218,8 +317,8 @@ window.addEventListener("load",
         function callHomeScreen() {
             /* ----------------------- OpenWeather API -----------------------*/
             //------------------ Aktuelle Wetterdaten
-            const weatherUrl = "http://api.openweathermap.org/data/2.5/weather";
-            const apiKey = "27545a642fad3717f02bac70d150c024";
+
+
             var currentWeatherAPI = `${weatherUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
 
             // Anfrage senden und erst nach Empfangen der Daten weitermachen (then)
@@ -373,15 +472,18 @@ window.addEventListener("load",
                 }
             }
 
-            
+
             // Funktion um das Nutzermenü aufzurufen bzw. zu schließen
             var menuIsClosed = true;
-            
+
             function openMenu() {
                 if (menuIsClosed) {
+                    // Menüelement zum Ändern der Nutzerdaten
                     newDiv("navMenu", $("parentDiv"));
                     newDiv("editProfile", $("navMenu"));
                     $("editProfile").textContent = "Profil bearbeiten"
+
+                    // Menüelement zum Löschen des aktuellen Nutzerkontos
                     newDiv("deleteUser", $("navMenu"));
                     $("deleteUser").textContent = "Konto löschen"
                     $("deleteUser").addEventListener("click", function () {
