@@ -406,13 +406,13 @@ body {
 
 #searchPlace, #searchZip, #searchBtn {
     height: 30px;
-    width: 70%;
+    width: 50%;
     border-radius: 5px;
     border: none;
     margin-top: 2%;
 }
 
-#searchCoordLo,#searchCoordLa {
+#searchCoordLo, #searchCoordLa {
     height: 30px;
     width: 34%;
     border-radius: 5px;
@@ -420,10 +420,20 @@ body {
     margin-top: 2%;
     font-size: 0.6em;
 }
-#searchCoordLo{
-    margin-right:2%
+
+#searchCoordLo,#searchPlace, #searchZip {
+    margin-right: 2%
 }
 
 #searchBtn {
     margin-top: 5%;
+}
+
+#searchCountryPlace, #searchCountry {
+    height: 30px;
+    width: 22%;
+    border-radius: 5px;
+    border: none;
+    margin-top: 2%;
+    font-size: 0.6em;
 }

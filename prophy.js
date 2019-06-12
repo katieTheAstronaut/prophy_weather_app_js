@@ -45,6 +45,13 @@ window.addEventListener("load",
             searchPlace.placeholder = "Ort"
             searchPlaceCont.appendChild(searchPlace);
 
+            var searchCountryPlace = document.createElement("input");
+            searchCountryPlace.type = "text";
+            searchCountryPlace.id = "searchCountryPlace";
+            searchCountryPlace.required = true;
+            searchCountryPlace.placeholder = "Länderkürzel";
+            searchPlaceCont.appendChild(searchCountryPlace);
+
             // Eingabefeld für Postleitzahl
             var searchZip = document.createElement("input");
             searchZip.type = "text";
@@ -52,6 +59,15 @@ window.addEventListener("load",
             searchZip.required = true;
             searchZip.placeholder = "Postleizahl"
             searchPlaceCont.appendChild(searchZip);
+
+            // Eingabefeld für Länderkürzel
+            var searchCountry = document.createElement("input");
+            searchCountry.type = "text";
+            searchCountry.id = "searchCountry";
+            searchCountry.required = true;
+            searchCountry.placeholder = "Länderkürzel";
+            searchPlaceCont.appendChild(searchCountry);
+
 
             // Eingabefelder für Koordinaten (Länge & Breite)
             var searchCoordLo = document.createElement("input");
@@ -87,25 +103,62 @@ window.addEventListener("load",
             // Prüfen ob überhaupt ein Feld ausgefüllt wurde
             if (($("searchPlace").value === "") && ($("searchZip").value === "") && ($("searchCoordLo").value === "")) {
                 alert("Bitte gib einen vollständigen Suchwert an!")
-            } else if ($("searchPlace").value !== "") {
-                searchQuery = "q=" + $("searchPlace").value;
-            } else if ($("searchZip").value !== "") {
-                searchQuery = "zip=" + $("searchZip").value;
+            } else if ($("searchPlace").value !== "" && $("searchCountryPlace").value !== "") {
+                searchQuery = "q=" + $("searchPlace").value + "," + $("searchCountryPlace").value;;
+            } else if ($("searchZip").value !== "" && $("searchCountry").value !== "") {
+                searchQuery = "zip=" + $("searchZip").value + "," + $("searchCountry").value;
             } else if ($("searchCoordLo").value !== "" && $("searchCoordLa").value !== "") {
                 searchQuery = "lat=" + $("searchCoordLa").value + "&lon=" + $("searchCoordLo").value;
             }
 
             var searchUrl = `${weatherUrl}?` + searchQuery + `&appid=${apiKey}`;
-            console.log(searchUrl);
+
+            fetch(searchUrl)
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
 
 
-            ////
-            ////FINISH HERE
+                })
 
         }
 
+        /* ----------------------- Geolocation -----------------------*/
 
+        function getGeoLocation() {
+            navigator.geolocation.getCurrentPosition(updatelocation, locationError);
+        }
 
+        function updatelocation() {
+
+        }
+
+        function locationError() {
+            switch (e.code) {
+                case e.UNKNOWN_ERROR:
+                    console.log("UNKNOWN_ERROR");
+                    console.log("Error message: " + e.message);
+                    break;
+                case e.PERMISSION_DENIED:
+                    console.log("PERMISSION_DENIED");
+                    console.log("Error message: " + e.message);
+                    break;
+                case e.POSITION_UNAVAILABLE:
+                    console.log("POSITION_UNAVAILABLE");
+                    console.log("Error message: " + e.message);
+                    break;
+                case e.TIMEOUT:
+                    console.log("TIMEOUT");
+                    console.log("Error message: " + e.message);
+                    break;
+                default:
+                    console.log("Unbekannter Fehlercode");
+                    console.log("Error message: " + e.message);
+                    break;
+            }
+        }
 
 
 
@@ -315,6 +368,8 @@ window.addEventListener("load",
         // Die Funktion callHomeScreen ruft den Startbildschirm auf und lädt die aktuellen 
         // Wetterdaten und Vorhersagedaten in die entsprechenden Elemente
         function callHomeScreen() {
+
+            clearScreen();
             /* ----------------------- OpenWeather API -----------------------*/
             //------------------ Aktuelle Wetterdaten
 
@@ -418,6 +473,12 @@ window.addEventListener("load",
             // Parent Wrapper erstellen
             var parent = $("parentDiv");
             //parent.style.backgroundImage = randBgColour();
+
+
+            // Titel "Prophy" im Header als Link zur Startseite implementieren
+            $("title").addEventListener("click", function () {
+                callHomeScreen();
+            });
 
             // Loginbutton, Nutzermenü und Logoutbutton je nach Nutzerstatus anzeigen lassen
             if (localStorage.getItem("currentUser") !== null) {
