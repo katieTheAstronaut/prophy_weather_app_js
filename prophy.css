@@ -234,10 +234,7 @@ input {
 #curveWeek {
     width: 70%;
     margin: 0 auto;
-    height: 200px;
-    background-color: rgba(255, 255, 255, 0.205);
-    font-size: 3em;
-    text-align: center;
+   text-align: center;
 }
 
 #hourlyWrapper {
@@ -500,4 +497,27 @@ input {
 
 #deleteIcon:hover {
     cursor: pointer;
+}
+
+
+/* ----------------------- Custom-Element (Stundenansicht-Objekt) -----------------------*/
+.hourContainers {
+
+    height: 50px;
+    width: 100px;
+    border-radius: 50px;
+    background-color: white;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+/* ----------------------- Custom-Element (Stundenansicht-Objekt) -----------------------*/
+.hourContainers {
+
+    height: 50px;
+    width: 100px;
+    border-radius: 50px;
+    background-color: white;
+    padding: 20px;
+    margin-top: 10px;
 }

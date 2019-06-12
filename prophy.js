@@ -470,7 +470,7 @@ window.addEventListener("load",
                     // 5-Tage-Kacheln
                     newDiv('fiveDayWrapper', forecast);
 
-                    for (var i = 0; i < 6; i++) {
+                    for (var i = 0; i < days.length; i++) {
                         newDiv('day' + i, fiveDayWrapper);
                         $('day' + i).className = 'days';
                         newDiv('upperDay' + i, $('day' + i));
@@ -491,32 +491,89 @@ window.addEventListener("load",
 
 
                     // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
-                    for (var i = 0; i < 5; i++) {
-                        $('day' + i).addEventListener('click', function () {
+                    // Für jeden Button wird dabei ein Eventlistener gesetzt, welches für den 
+                    // entsprechenden Tag den Vorhersagecontainer mit Stundenkacheln befüllt.
+                    for (var i = 0; i < days.length; i++) {
+                        $('day' + i).addEventListener('click', function (event) {
                             var allButtons = document.getElementsByClassName('days');
+
                             for (var i = 0; i < allButtons.length; i++) {
                                 allButtons[i].style.backgroundColor = 'lightgrey';
+                                this.style.backgroundColor = 'white';
                             }
-                            this.style.backgroundColor = 'white';
                         });
                     }
 
+
                     newDiv('dailyForecastWrapper', $("forecast"));
+                    detailedDay(days[0]);
 
                     // die folgenden 5 Tage für Vorschau auswählen
                     var weekDays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
                     days.forEach((value, index) => {
-                        $("upperDay" + (index)).textContent = weekDays[(convertWeekDay(value[0].dt))]
+                        $("upperDay" + (index)).textContent = weekDays[(convertWeekDay(value[0].dt))];
+                        $("day" + (index)).addEventListener('click', event => {
+                            $("dailyForecastWrapper").remove();
+                            newDiv('dailyForecastWrapper', $("forecast"));
+                            // Wrapper neu befüllen
+                            detailedDay(days[index]);
+                        })
                     });
                 });
-
-
             //     newDiv('hourlyData', hourlyWrapper);
             //     newDiv('hourlyDataText', hourlyData);
             //     $('hourlyDataText').innerText =
             //         'Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ';
 
         }
+
+        // Für jede Std aus dem Tag wird ein custom Element erstellt, 
+        // dass die Daten der jeweiligen Std darstellt
+        function detailedDay(day) {
+            console.log(day);
+            day.forEach(hour => {
+                $("dailyForecastWrapper").append(new Hour(hour));
+            })
+        }
+
+        // Custom Element für die Stundenansicht der Vorhersage
+        class Hour extends HTMLElement {
+            constructor(hour) {
+                super();
+                this.hour = hour;
+
+
+                this.hourBox = document.createElement("div");
+                this.hourBox.id = "hourBox";
+                this.append(this.hourBox);
+            }
+
+            // ConnectedCallback wird nur dann aufgerufen, wenn Element im DOM erstellt wird 
+            //(nicht schon bei Instanziierung)
+            connectedCallback() {
+                var container = document.createElement("div");
+                container.className = "hourContainers";
+                this.hourBox.append(container)
+
+                var hourTitle = document.createElement("div");
+                hourTitle.className = "hourTitle";
+                hourTitle.textContent = convertTime(this.hour.dt);
+                container.append(hourTitle);
+
+                var hourTemp = document.createElement("div");
+                hourTemp.id = "hourTemp";
+                hourTemp.textContent = this.hourTemp;
+                container.append(hourTemp);
+
+
+
+                console.log(this.hour)
+
+
+            }
+        }
+
+        window.customElements.define("hour-card", Hour);
 
         /* ----------------------- Favoriten -----------------------*/
 
@@ -753,7 +810,6 @@ window.addEventListener("load",
                 this.objBox = document.createElement("div");
                 this.objBox.id = "objBox";
                 this.append(this.objBox);
-                // this.drawThis();
             }
 
             connectedCallback() {
