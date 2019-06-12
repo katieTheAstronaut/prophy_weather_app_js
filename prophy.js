@@ -125,9 +125,8 @@ window.addEventListener("load",
                 .then(data => {
                     console.log(data);
                     clearScreen();
-                    callHomeScreen(data);
-
-                })
+                    callHomeScreen(data)
+                }).catch(e => console.log(e))
 
         }
 
@@ -467,399 +466,403 @@ window.addEventListener("load",
                     // Kurvenansicht über Woche --> Temperatur: als Zeit immer 14:00 auswählen pro Tag
 
                 });
+        }
 
+        /* ----------------------- Favoriten -----------------------*/
 
-            /* ----------------------- Favoriten -----------------------*/
+        // Bei Aufruf der Favoritenseite über das Favoriten-Icon wird eine Übersicht 
+        // der Favoriten des derzeit angemeldeten Nutzers angezeigt
 
-            // Bei Aufruf der Favoritenseite über das Favoriten-Icon wird eine Übersicht 
-            // der Favoriten des derzeit angemeldeten Nutzers angezeigt
+        function callFaveScreen() {
+            clearScreen();
 
-            function callFaveScreen() {
-                clearScreen();
+            var user = JSON.parse(localStorage.getItem(loggedInUser));
 
-                var user = JSON.parse(localStorage.getItem(loggedInUser));
+            user.favorites.forEach((favorite) => {
+                var fetchUrlWithId = `http://api.openweathermap.org/data/2.5/weather?id=${favorite}&appid=${apiKey}&lang=de&units=metric`;
 
-                user.favorites.forEach((favorite) => {
-                    var fetchUrlWithId = `http://api.openweathermap.org/data/2.5/weather?id=${favorite}&appid=${apiKey}&lang=de&units=metric`;
+                fetch(fetchUrlWithId)
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data);
+                        $("parentDiv").appendChild(new FaveObj(data.id, data.name, data.sys.country, data.main.temp, data.weather[0].description));
+                    });
+            })
+        }
 
-                    fetch(fetchUrlWithId)
-                        .then(response => {
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log(data);
-                            $("parentDiv").appendChild(new FaveObj(data.id, data.name, data.sys.country, data.main.temp, data.weather[0].description));
-                        });
-                })
+        // Funktion überprüft ob momentan ein Nutzer angemeldet ist. 
+        // Nur falls dieser Angemeldet ist, wird geprüft, ob die aktuelle Id 
+        // des Ortes bereits in seinen Favoriten im Local Storage gespeichert ist. 
+        // Wenn nein, wird der Favorit hinzugefügt, ansonsten ignoriert. 
+        function checkFavorite(id) {
+            if (loggedInUser === undefined)
+                return
+
+            // Nutzer aus Local Storage rausziehen
+            var user = JSON.parse(localStorage.getItem(loggedInUser))
+
+            var ifAddNeccessary = true;
+            user.favorites.forEach((favorite) => {
+                if (favorite === id)
+                    ifAddNeccessary = false;
+            })
+
+            if (ifAddNeccessary && id !== null) {
+                user.favorites.push(id)
+                localStorage.setItem(loggedInUser, JSON.stringify(user))
             }
+        }
 
-            // Funktion überprüft ob momentan ein Nutzer angemeldet ist. 
-            // Nur falls dieser Angemeldet ist, wird geprüft, ob die aktuelle Id 
-            // des Ortes bereits in seinen Favoriten im Local Storage gespeichert ist. 
-            // Wenn nein, wird der Favorit hinzugefügt, ansonsten ignoriert. 
-            function checkFavorite(id) {
-                if (loggedInUser === undefined)
-                    return
+        /* ----------------------- UI Elemente -----------------------*/
 
-                // Nutzer aus Local Storage rausziehen
-                var user = JSON.parse(localStorage.getItem(loggedInUser))
+        // Parent Wrapper erstellen
+        var parent = $("parentDiv");
+        //parent.style.backgroundImage = randBgColour();
 
-                var ifAddNeccessary = true;
-                user.favorites.forEach((favorite) => {
-                    if (favorite === id)
-                        ifAddNeccessary = false;
-                })
 
-                if (ifAddNeccessary) {
-                    user.favorites.push(id)
-                    localStorage.setItem(loggedInUser, JSON.stringify(user))
-                }
+        // Titel "Prophy" im Header als Link zur Startseite implementieren
+        $("title").addEventListener("click", function () {
+            callHomeScreen();
+        });
+
+
+
+        // Loginbutton, Nutzermenü und Logoutbutton je nach Nutzerstatus anzeigen lassen
+        if (localStorage.getItem("currentUser") !== null) {
+            // loggedInUser = JSON.parse(localStorage.getItem("currentUser"));
+            loggedInUser = localStorage.getItem("currentUser");
+            $("loginButton").textContent = loggedInUser;
+            getfavorites();
+            getUserMenu();
+            getLogoutButton();
+        } else {
+            $("loginButton").textContent = "Login";
+            removeUserMenu();
+            removeLogoutButton();
+            removeFavorites();
+        }
+
+
+        function getfavorites() {
+            newDiv("favesDiv", $("navWrapper"));
+            $("favesDiv").addEventListener("click", function () {
+                callFaveScreen();
+            });
+            var favIcon = document.createElement("img");
+            favIcon.id = "favIcon";
+            favIcon.src = "https://img.icons8.com/clouds/50/000000/like.png";
+            favIcon.height = "50";
+            favIcon.width = "50";
+            $("favesDiv").appendChild(favIcon);
+        }
+
+        function removeFavorites() {
+            if ($("favesDiv") != null) {
+                $("favesDiv").parentElement.removeChild($("favesDiv"));
             }
-
-            /* ----------------------- UI Elemente -----------------------*/
-
-            // Parent Wrapper erstellen
-            var parent = $("parentDiv");
-            //parent.style.backgroundImage = randBgColour();
+        }
 
 
-            // Titel "Prophy" im Header als Link zur Startseite implementieren
-            $("title").addEventListener("click", function () {
+        function getUserMenu() {
+            newDiv("profileMenu", $("navWrapper"));
+            $("profileMenu").addEventListener("click", function () {
+                openMenu();
+                console.log("got clicked");
+            });
+            var menuIcon = document.createElement("img");
+            menuIcon.id = "menuIcon";
+            menuIcon.src = "https://img.icons8.com/clouds/100/000000/menu.png";
+            menuIcon.height = "50";
+            menuIcon.width = "50";
+            $("profileMenu").appendChild(menuIcon);
+        }
+
+        function removeUserMenu() {
+            if ($("profileMenu") != null) {
+                $("profileMenu").parentElement.removeChild($("profileMenu"));
+            }
+        }
+
+        function getLogoutButton() {
+            newDiv("logoutBtn", $("navWrapper"));
+            $("logoutBtn").addEventListener("click", function () {
+                localStorage.removeItem("currentUser");
                 callHomeScreen();
             });
+            var logoutIcon = document.createElement("img");
+            logoutIcon.id = "logoutIcon";
+            logoutIcon.src = "https://img.icons8.com/clouds/100/000000/export.png";
+            logoutIcon.height = "50";
+            logoutIcon.width = "50";
+            $("logoutBtn").appendChild(logoutIcon);
+        }
 
-
-
-            // Loginbutton, Nutzermenü und Logoutbutton je nach Nutzerstatus anzeigen lassen
-            if (localStorage.getItem("currentUser") !== null) {
-                // loggedInUser = JSON.parse(localStorage.getItem("currentUser"));
-                loggedInUser = localStorage.getItem("currentUser");
-                $("loginButton").textContent = loggedInUser;
-                getfavorites();
-                getUserMenu();
-                getLogoutButton();
-            } else {
-                $("loginButton").textContent = "Login";
-                removeUserMenu();
-                removeLogoutButton();
-                removeFavorites();
+        function removeLogoutButton() {
+            if ($("logoutBtn") != null) {
+                $("logoutBtn").parentElement.removeChild($("logoutBtn"));
             }
+        }
 
 
-            function getfavorites() {
-                newDiv("favesDiv", $("navWrapper"));
-                $("favesDiv").addEventListener("click", function () {
-                    callFaveScreen();
-                });
-                var favIcon = document.createElement("img");
-                favIcon.id = "favIcon";
-                favIcon.src = "https://img.icons8.com/clouds/50/000000/like.png";
-                favIcon.height = "50";
-                favIcon.width = "50";
-                $("favesDiv").appendChild(favIcon);
-            }
+        // Funktion um das Nutzermenü aufzurufen bzw. zu schließen
+        var menuIsClosed = true;
 
-            function removeFavorites() {
-                if ($("favesDiv") != null) {
-                    $("favesDiv").parentElement.removeChild($("favesDiv"));
-                }
-            }
+        function openMenu() {
+            if (menuIsClosed) {
+                // Menüelement zum Ändern der Nutzerdaten
+                newDiv("navMenu", $("parentDiv"));
+                newDiv("editProfile", $("navMenu"));
+                $("editProfile").textContent = "Profil bearbeiten"
 
-
-            function getUserMenu() {
-                newDiv("profileMenu", $("navWrapper"));
-                $("profileMenu").addEventListener("click", function () {
-                    openMenu();
-                    console.log("got clicked");
-                });
-                var menuIcon = document.createElement("img");
-                menuIcon.id = "menuIcon";
-                menuIcon.src = "https://img.icons8.com/clouds/100/000000/menu.png";
-                menuIcon.height = "50";
-                menuIcon.width = "50";
-                $("profileMenu").appendChild(menuIcon);
-            }
-
-            function removeUserMenu() {
-                if ($("profileMenu") != null) {
-                    $("profileMenu").parentElement.removeChild($("profileMenu"));
-                }
-            }
-
-            function getLogoutButton() {
-                newDiv("logoutBtn", $("navWrapper"));
-                $("logoutBtn").addEventListener("click", function () {
+                // Menüelement zum Löschen des aktuellen Nutzerkontos
+                newDiv("deleteUser", $("navMenu"));
+                $("deleteUser").textContent = "Konto löschen"
+                $("deleteUser").addEventListener("click", function () {
+                    deleteUser();
                     localStorage.removeItem("currentUser");
                     callHomeScreen();
                 });
-                var logoutIcon = document.createElement("img");
-                logoutIcon.id = "logoutIcon";
-                logoutIcon.src = "https://img.icons8.com/clouds/100/000000/export.png";
-                logoutIcon.height = "50";
-                logoutIcon.width = "50";
-                $("logoutBtn").appendChild(logoutIcon);
+            } else {
+                closeMenu();
             }
 
-            function removeLogoutButton() {
-                if ($("logoutBtn") != null) {
-                    $("logoutBtn").parentElement.removeChild($("logoutBtn"));
-                }
-            }
+            menuIsClosed = !menuIsClosed;
 
-
-            // Funktion um das Nutzermenü aufzurufen bzw. zu schließen
-            var menuIsClosed = true;
-
-            function openMenu() {
-                if (menuIsClosed) {
-                    // Menüelement zum Ändern der Nutzerdaten
-                    newDiv("navMenu", $("parentDiv"));
-                    newDiv("editProfile", $("navMenu"));
-                    $("editProfile").textContent = "Profil bearbeiten"
-
-                    // Menüelement zum Löschen des aktuellen Nutzerkontos
-                    newDiv("deleteUser", $("navMenu"));
-                    $("deleteUser").textContent = "Konto löschen"
-                    $("deleteUser").addEventListener("click", function () {
-                        deleteUser();
-                        localStorage.removeItem("currentUser");
-                        callHomeScreen();
-                    });
-                } else {
-                    closeMenu();
-                }
-
-                menuIsClosed = !menuIsClosed;
-
-            }
-
-            function closeMenu() {
-                $("navMenu").parentElement.removeChild($("navMenu"));
-            }
-
-
-            function createDay() {
-                var parent = $('parentDiv');
-
-                newDiv('dailyWrapper', parent);
-                newDiv('dailyLeft', dailyWrapper);
-                newDiv('dailyMiddle', dailyWrapper);
-                newDiv('dailyRight', dailyWrapper);
-
-                // Tageansicht linke Seite
-                newDiv('cityName', dailyLeft);
-                $('cityName').innerText = city;
-                newDiv('countryName', dailyLeft);
-                $('countryName').innerText = country.toUpperCase();
-                newDiv('dataWrapper', dailyLeft);
-                newDiv('data', dataWrapper);
-
-                var data = $('data');
-
-                newDiv('windSpeed', data);
-                newDiv('windDegree', data);
-                newDiv('humidity', data);
-                newDiv('precipitation', data);
-                newDiv('pressure', data);
-                newDiv('clouds', data);
-                newDiv('visibility', data);
-                newDiv('sunRise', data);
-                newDiv('sunSet', data);
-
-                // Tagesansicht mitte
-                var weatherImg = document.createElement('img');
-                weatherImg.src = 'sun.png';
-                newDiv('weatherIcon', dailyMiddle);
-                weatherImg.height = '200';
-                $('weatherIcon').appendChild(weatherImg);
-
-                // Tagesansicht rechte Seite
-                newDiv('currentDate', dailyRight);
-                newDiv('currentTime', dailyRight);
-                newDiv('description', dailyRight);
-                newDiv('degrees', dailyRight);
-                $('degrees').innerText = '0';
-
-                // Trennlinie
-                newDiv('separator', parent);
-
-                // Vorhersagebereich -
-                newDiv('forecast', parent);
-                newDiv('fiveDaysLabel', forecast);
-                $('fiveDaysLabel').innerText = '5-Tage-Vorhersage';
-
-                // 5-Tage-Kacheln
-                newDiv('fiveDayWrapper', forecast);
-
-                for (var i = 0; i < 5; i++) {
-                    newDiv('day' + i, fiveDayWrapper);
-                    $('day' + i).className = 'days';
-                    newDiv('upperDay' + i, $('day' + i));
-                    $('upperDay' + i).className = 'dayInner';
-                    newDiv('middleDay' + i, $('day' + i));
-                    $('middleDay' + i).className = 'dayInner';
-                    newDiv('lowerDay' + i, $('day' + i));
-                    $('lowerDay' + i).className = 'dayInner';
-                    var imgSun = document.createElement('img');
-                    imgSun.id = 'imgSun';
-                    imgSun.src = 'sun.png';
-                    imgSun.height = '30';
-                    imgSun.width = '30';
-                    $('middleDay' + i).appendChild(imgSun);
-                    $('lowerDay' + i).innerText = '13°';
-                }
-
-                // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
-                for (var i = 0; i < 5; i++) {
-                    $('day' + i).addEventListener('click', function () {
-                        var allButtons = document.getElementsByClassName('days');
-                        for (var i = 0; i < allButtons.length; i++) {
-                            allButtons[i].style.backgroundColor = 'lightgrey';
-                        }
-                        this.style.backgroundColor = 'white';
-                    });
-                }
-
-                newDiv('dailyForecastWrapper', forecast);
-
-                // Vorhersagebereich - Stundenansicht
-                newDiv('hourlyWrapper', dailyForecastWrapper);
-                newDiv('hourlyButtonsWrapper', hourlyWrapper);
-
-                for (var i = 0; i < 8; i++) {
-                    var btn = document.createElement('button');
-                    btn.id = 'hours' + i;
-                    btn.className = 'hours';
-                    hourlyButtonsWrapper.appendChild(btn);
-                }
-
-                // Gedrückten StundenButton farblich abheben und andere Buttons zurücksetzen
-                for (var i = 0; i < 8; i++) {
-                    $('hours' + i).addEventListener('click', function () {
-                        var allButtons = document.getElementsByClassName('hours');
-                        for (var i = 0; i < allButtons.length; i++) {
-                            allButtons[i].style.backgroundColor = 'lightgrey';
-                            console.log('wetter' + dailyObj.weatherIndex);
-                        }
-                        setHourlyData(dailyObj, i); // je nach Button
-                        this.style.backgroundColor = 'white';
-                    });
-                }
-
-                $('hours0').innerText = '02:00';
-                $('hours1').innerText = '05:00';
-                $('hours2').innerText = '08:00';
-                $('hours3').innerText = '11:00';
-                $('hours4').innerText = '14:00';
-                $('hours5').innerText = '17:00';
-                $('hours6').innerText = '20:00';
-                $('hours7').innerText = '23:00';
-
-                newDiv('hourlyData', hourlyWrapper);
-                newDiv('hourlyDataText', hourlyData);
-                $('hourlyDataText').innerText =
-                    'Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ';
-            }
-            // Klassenobjekt mit allen Daten zur Vorhersage
-
-            class DayObj {
-                constructor(wkd, dailyTemp, icon, weekDailyCurve, weatherData) {
-                    this.weekdayName = wkd;
-                    this.dailyTemp = dailyTemp;
-                    this.icon = icon;
-                    this.drawDailyCurve = function () {
-                        // drawing the week overview svg curve here
-                        // using weekCurve [] filled in fetch
-                    };
-                    this.weatherData = weatherData;
-                    this.getHourlyData = (weatherIndex) => {
-                        return "Windstärke: " + weatherData[weatherIndex][0] +
-                            " \n Windrichtung: " + weatherData[weatherIndex][1] +
-                            " \n Niederschlag: " + weatherData[weatherIndex][2] +
-                            " \n Luftdruck: " + weatherData[weatherIndex][3] +
-                            "\n Bewölkung: " + weatherData[weatherIndex][4] +
-                            "\n Sichtbarkeit: " + weatherData[weatherIndex][5] +
-                            "\n Sonnenaufgang: " + weatherData[weatherIndex][6] +
-                            " \n Sonnenuntergang: " + weatherData[weatherIndex][7];
-                    }
-                }
-            };
-
-
-            /* ----------------------- Custom Element -----------------------*/
-
-
-            // BEI AUFRUF
-            //    $('contentContainer').append(new LoginCard());
-
-            class FaveObj extends HTMLElement {
-                constructor(cityId, cityName, countryInit, currentTemp, descr) {
-                    super();
-                    this.cityId = cityId;
-                    this.cityName = cityName;
-                    this.countryInit = countryInit;
-                    this.currentTemp = currentTemp;
-                    this.descr = descr;
-
-                    this.objBox = document.createElement("div");
-                    this.objBox.id = "objBox";
-                    this.append(this.objBox);
-                    this.drawThis();
-                }
-
-                // Funktion, die das Objekt im Dom erstellt
-                drawThis() {
-                    var objectContainer = document.createElement("div");
-                    objectContainer.id = "objectContainer";
-                    this.objBox.append(objectContainer);
-
-                    var objTitle = document.createElement("div");
-                    objTitle.id = "objTitle";
-                    objTitle.textContent = this.cityName;
-                    objectContainer.append(objTitle);
-
-                    var objCountry = document.createElement("div");
-                    objCountry.id = "objCountry";
-                    objCountry.textContent = this.countryInit;
-                    objectContainer.append(objCountry);
-
-                    var objTemp = document.createElement("div");
-                    objTemp.id = "objTemp";
-                    objTemp.textContent = this.currentTemp + "°C";
-                    objectContainer.append(objTemp);
-
-                    var objDescr = document.createElement("div");
-                    objDescr.id = "objDescr";
-                    objDescr.textContent = this.descr;
-                    objectContainer.append(objDescr);
-
-                    var deleteBtn = document.createElement("div");
-                    deleteBtn.id = "deleteBtn";
-                    this.objBox.append(deleteBtn);
-
-                    var deleteIcon = document.createElement("img");
-                    deleteIcon.id = "deleteIcon";
-                    deleteIcon.src = "https://img.icons8.com/cute-clipart/64/000000/delete-sign.png";
-                    deleteIcon.height = "50";
-                    deleteIcon.width = "50";
-                    deleteBtn.append(deleteIcon);
-
-                }
-
-
-            }
-
-
-            // Das Custom Element FaveCard muss dem Window bekannt gemacht werden.
-            window.customElements.define('fave-card', FaveObj);
-
-
-
-
-            // function setHourlyData(obj, index) {
-            //     $("hourlyDataText").innerText = obj.getHourlyData(index);
-            // }
         }
+
+        function closeMenu() {
+            $("navMenu").parentElement.removeChild($("navMenu"));
+        }
+
+
+        function createDay() {
+            var parent = $('parentDiv');
+
+            newDiv('dailyWrapper', parent);
+            newDiv('dailyLeft', dailyWrapper);
+            newDiv('dailyMiddle', dailyWrapper);
+            newDiv('dailyRight', dailyWrapper);
+
+            // Tageansicht linke Seite
+            newDiv('cityName', dailyLeft);
+            $('cityName').innerText = city;
+            newDiv('countryName', dailyLeft);
+            $('countryName').innerText = country.toUpperCase();
+            newDiv('dataWrapper', dailyLeft);
+            newDiv('data', dataWrapper);
+
+            var data = $('data');
+
+            newDiv('windSpeed', data);
+            newDiv('windDegree', data);
+            newDiv('humidity', data);
+            newDiv('precipitation', data);
+            newDiv('pressure', data);
+            newDiv('clouds', data);
+            newDiv('visibility', data);
+            newDiv('sunRise', data);
+            newDiv('sunSet', data);
+
+            // Tagesansicht mitte
+            var weatherImg = document.createElement('img');
+            weatherImg.src = 'sun.png';
+            newDiv('weatherIcon', dailyMiddle);
+            weatherImg.height = '200';
+            $('weatherIcon').appendChild(weatherImg);
+
+            // Tagesansicht rechte Seite
+            newDiv('currentDate', dailyRight);
+            newDiv('currentTime', dailyRight);
+            newDiv('description', dailyRight);
+            newDiv('degrees', dailyRight);
+            $('degrees').innerText = '0';
+
+            // Trennlinie
+            newDiv('separator', parent);
+
+            // Vorhersagebereich -
+            newDiv('forecast', parent);
+            newDiv('fiveDaysLabel', forecast);
+            $('fiveDaysLabel').innerText = '5-Tage-Vorhersage';
+
+            // 5-Tage-Kacheln
+            newDiv('fiveDayWrapper', forecast);
+
+            for (var i = 0; i < 5; i++) {
+                newDiv('day' + i, fiveDayWrapper);
+                $('day' + i).className = 'days';
+                newDiv('upperDay' + i, $('day' + i));
+                $('upperDay' + i).className = 'dayInner';
+                newDiv('middleDay' + i, $('day' + i));
+                $('middleDay' + i).className = 'dayInner';
+                newDiv('lowerDay' + i, $('day' + i));
+                $('lowerDay' + i).className = 'dayInner';
+                var imgSun = document.createElement('img');
+                imgSun.id = 'imgSun';
+                imgSun.src = 'sun.png';
+                imgSun.height = '30';
+                imgSun.width = '30';
+                $('middleDay' + i).appendChild(imgSun);
+                $('lowerDay' + i).innerText = '13°';
+            }
+
+            // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
+            for (var i = 0; i < 5; i++) {
+                $('day' + i).addEventListener('click', function () {
+                    var allButtons = document.getElementsByClassName('days');
+                    for (var i = 0; i < allButtons.length; i++) {
+                        allButtons[i].style.backgroundColor = 'lightgrey';
+                    }
+                    this.style.backgroundColor = 'white';
+                });
+            }
+
+            newDiv('dailyForecastWrapper', forecast);
+
+            // Vorhersagebereich - Stundenansicht
+            newDiv('hourlyWrapper', dailyForecastWrapper);
+            newDiv('hourlyButtonsWrapper', hourlyWrapper);
+
+            for (var i = 0; i < 8; i++) {
+                var btn = document.createElement('button');
+                btn.id = 'hours' + i;
+                btn.className = 'hours';
+                hourlyButtonsWrapper.appendChild(btn);
+            }
+
+            // Gedrückten StundenButton farblich abheben und andere Buttons zurücksetzen
+            for (var i = 0; i < 8; i++) {
+                $('hours' + i).addEventListener('click', function () {
+                    var allButtons = document.getElementsByClassName('hours');
+                    for (var i = 0; i < allButtons.length; i++) {
+                        allButtons[i].style.backgroundColor = 'lightgrey';
+                        console.log('wetter' + dailyObj.weatherIndex);
+                    }
+                    setHourlyData(dailyObj, i); // je nach Button
+                    this.style.backgroundColor = 'white';
+                });
+            }
+
+            $('hours0').innerText = '02:00';
+            $('hours1').innerText = '05:00';
+            $('hours2').innerText = '08:00';
+            $('hours3').innerText = '11:00';
+            $('hours4').innerText = '14:00';
+            $('hours5').innerText = '17:00';
+            $('hours6').innerText = '20:00';
+            $('hours7').innerText = '23:00';
+
+            newDiv('hourlyData', hourlyWrapper);
+            newDiv('hourlyDataText', hourlyData);
+            $('hourlyDataText').innerText =
+                'Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ';
+        }
+        // Klassenobjekt mit allen Daten zur Vorhersage
+
+        class DayObj {
+            constructor(wkd, dailyTemp, icon, weekDailyCurve, weatherData) {
+                this.weekdayName = wkd;
+                this.dailyTemp = dailyTemp;
+                this.icon = icon;
+                this.drawDailyCurve = function () {
+                    // drawing the week overview svg curve here
+                    // using weekCurve [] filled in fetch
+                };
+                this.weatherData = weatherData;
+                this.getHourlyData = (weatherIndex) => {
+                    return "Windstärke: " + weatherData[weatherIndex][0] +
+                        " \n Windrichtung: " + weatherData[weatherIndex][1] +
+                        " \n Niederschlag: " + weatherData[weatherIndex][2] +
+                        " \n Luftdruck: " + weatherData[weatherIndex][3] +
+                        "\n Bewölkung: " + weatherData[weatherIndex][4] +
+                        "\n Sichtbarkeit: " + weatherData[weatherIndex][5] +
+                        "\n Sonnenaufgang: " + weatherData[weatherIndex][6] +
+                        " \n Sonnenuntergang: " + weatherData[weatherIndex][7];
+                }
+            }
+        };
+
+
+        /* ----------------------- Custom Element -----------------------*/
+
+
+        // BEI AUFRUF
+        //    $('contentContainer').append(new LoginCard());
+
+        class FaveObj extends HTMLElement {
+            constructor(cityId, cityName, countryInit, currentTemp, descr) {
+                super();
+                this.cityId = cityId;
+                this.cityName = cityName;
+                this.countryInit = countryInit;
+                this.currentTemp = currentTemp;
+                this.descr = descr;
+
+                this.objBox = document.createElement("div");
+                this.objBox.id = "objBox";
+                this.append(this.objBox);
+                // this.drawThis();
+            }
+
+            connectedCallback() {
+                // Funktion, die das Objekt im Dom erstellt
+
+                var objectContainer = document.createElement("div");
+                objectContainer.id = "objectContainer";
+                this.objBox.append(objectContainer);
+
+                var objTitle = document.createElement("div");
+                objTitle.id = "objTitle";
+                objTitle.textContent = this.cityName;
+                objectContainer.append(objTitle);
+
+                var objCountry = document.createElement("div");
+                objCountry.id = "objCountry";
+                objCountry.textContent = this.countryInit;
+                objectContainer.append(objCountry);
+
+                var objTemp = document.createElement("div");
+                objTemp.id = "objTemp";
+                objTemp.textContent = this.currentTemp + "°C";
+                objectContainer.append(objTemp);
+
+                var objDescr = document.createElement("div");
+                objDescr.id = "objDescr";
+                objDescr.textContent = this.descr;
+                objectContainer.append(objDescr);
+
+                var deleteBtn = document.createElement("div");
+                deleteBtn.id = "deleteBtn";
+                this.objBox.append(deleteBtn);
+
+                var deleteIcon = document.createElement("img");
+                deleteIcon.id = "deleteIcon";
+                deleteIcon.src = "https://img.icons8.com/cute-clipart/64/000000/delete-sign.png";
+                deleteIcon.height = "50";
+                deleteIcon.width = "50";
+                deleteBtn.append(deleteIcon);
+
+
+
+            }
+
+
+        }
+        window.customElements.define('fave-card', FaveObj);
+
+
+
+
+
+
+        // function setHourlyData(obj, index) {
+        //     $("hourlyDataText").innerText = obj.getHourlyData(index);
+        // }
+
+        // Das Custom Element FaveCard muss dem Window bekannt gemacht werden.
+
         /* ----------------------- Helferfunktionen -----------------------*/
 
         function $(id) {
