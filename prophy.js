@@ -120,12 +120,12 @@ window.addEventListener("load",
 
             fetch(searchUrl)
                 .then(response => {
-                  return response.json();
+                    return response.json();
                 })
                 .then(data => {
                     console.log(data);
                     clearScreen();
-                    callHomeScreen(data);   
+                    callHomeScreen(data);
 
                 })
 
@@ -355,10 +355,10 @@ window.addEventListener("load",
             /* ----------------------- OpenWeather API -----------------------*/
             //------------------ Aktuelle Wetterdaten
 
-            if(fav === null){
-                
+            if (fav === null) {
+
             }
-            
+
 
             //var currentWeatherAPI = `${weatherUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
             var currentWeatherAPI = `${weatherUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
@@ -370,7 +370,7 @@ window.addEventListener("load",
                 })
                 .then(data => {
 
-                    checkFavorite(data.sys.id)
+                    checkFavorite(data.id)
 
                     const { temp, humidity, pressure } = data.main; // deklaration der kurzform der wetter variablen
                     var tempRounded = Math.round(temp * 10) / 10; // temperatur auf eine Dezimalstelle auf- bzw. abrunden
@@ -395,6 +395,13 @@ window.addEventListener("load",
                 })
 
             //------------------ Vorhersagedaten
+
+
+            // erstellt eine Anfrage URL aus einer übergebenen StadtID
+            async function createWeatherCityIdLink(id) {
+                let link = `http://api.openweathermap.org/data/2.5/weather?id=${id}&appid=${apiKey}&lang=de`;
+                return link;
+            }
 
             var forecastUrl = "http://api.openweathermap.org/data/2.5/forecast";
             var forecastAPI = `${forecastUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
@@ -443,7 +450,7 @@ window.addEventListener("load",
                     // Objekt instanziieren pro Tag (derzeit nur erstes)
                     dailyObj = new DayObj("Monday", "tempAtNoon", "icon", "weekCurve", hourData, 1);
 
-                    setHourlyData(dailyObj, 0);
+                    // setHourlyData(dailyObj, 0);
 
                     console.log(data.list[0].dt);
                     console.log(convertTime(data.list[0].dt));
@@ -455,10 +462,26 @@ window.addEventListener("load",
 
             /* ----------------------- Favoriten -----------------------*/
 
-            // Bei Aufruf der
+            // Bei Aufruf der Favoritenseite über das Favoriten-Icon wird eine Übersicht 
+            // der Favoriten des derzeit angemeldeten Nutzers angezeigt
+
             function callFaveScreen() {
                 clearScreen();
-                $("parentDiv").appendChild(new FaveObj);
+
+                var user = JSON.parse(localStorage.getItem(loggedInUser));
+
+                user.favorites.forEach((favorite) => {
+                    var fetchUrlWithId = `http://api.openweathermap.org/data/2.5/weather?id=${favorite}&appid=${apiKey}&lang=de&units=metric`;
+
+                    fetch(fetchUrlWithId)
+                        .then(response => {
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log(data);
+                            $("parentDiv").appendChild(new FaveObj(data.id, data.name, data.sys.country, data.main.temp, data.weather[0].description));
+                        });
+                })
             }
 
             // Funktion überprüft ob momentan ein Nutzer angemeldet ist. 
@@ -466,10 +489,10 @@ window.addEventListener("load",
             // des Ortes bereits in seinen Favoriten im Local Storage gespeichert ist. 
             // Wenn nein, wird der Favorit hinzugefügt, ansonsten ignoriert. 
             function checkFavorite(id) {
-                if(loggedInUser === undefined)
+                if (loggedInUser === undefined)
                     return
 
-                    // Nutzer aus Local Storage rausziehen
+                // Nutzer aus Local Storage rausziehen
                 var user = JSON.parse(localStorage.getItem(loggedInUser))
 
                 var ifAddNeccessary = true;
@@ -477,7 +500,7 @@ window.addEventListener("load",
                     if (favorite === id)
                         ifAddNeccessary = false;
                 })
-            
+
                 if (ifAddNeccessary) {
                     user.favorites.push(id)
                     localStorage.setItem(loggedInUser, JSON.stringify(user))
@@ -764,27 +787,47 @@ window.addEventListener("load",
                     this.descr = descr;
 
                     this.objBox = document.createElement("div");
+                    this.objBox.id = "objBox";
+                    this.append(this.objBox);
                     this.drawThis();
-
-
                 }
 
+                // Funktion, die das Objekt im Dom erstellt
                 drawThis() {
                     var objectContainer = document.createElement("div");
+                    objectContainer.id = "objectContainer";
                     this.objBox.append(objectContainer);
+
                     var objTitle = document.createElement("div");
-                    objTitle.textContent = cityName;
-                    console.log(cityName);
-                     // newDiv("objTitle",$("objectContainer"));
-                    // $("objTitle").textContent = cityName;
+                    objTitle.id = "objTitle";
+                    objTitle.textContent = this.cityName;
+                    objectContainer.append(objTitle);
 
-                    console.log(this);
-                    console.log(this.objBox);
+                    var objCountry = document.createElement("div");
+                    objCountry.id = "objCountry";
+                    objCountry.textContent = this.countryInit;
+                    objectContainer.append(objCountry);
 
-                    
-                    // newDiv("objTitle",$("objectContainer"));
-                    // $("objTitle").textContent = cityName;                    
+                    var objTemp = document.createElement("div");
+                    objTemp.id = "objTemp";
+                    objTemp.textContent = this.currentTemp + "°C";
+                    objectContainer.append(objTemp);
 
+                    var objDescr = document.createElement("div");
+                    objDescr.id = "objDescr";
+                    objDescr.textContent = this.descr;
+                    objectContainer.append(objDescr);
+
+                    var deleteBtn = document.createElement("div");
+                    deleteBtn.id = "deleteBtn";
+                    this.objBox.append(deleteBtn);
+
+                    var deleteIcon = document.createElement("img");
+                    deleteIcon.id = "deleteIcon";
+                    deleteIcon.src = "https://img.icons8.com/cotton/64/000000/delete-sign.png";
+                    deleteIcon.height = "50";
+                    deleteIcon.width = "50";
+                    deleteBtn.append(deleteIcon);
 
                 }
 
@@ -798,9 +841,9 @@ window.addEventListener("load",
 
 
 
-            function setHourlyData(obj, index) {
-                $("hourlyDataText").innerText = obj.getHourlyData(index);
-            }
+            // function setHourlyData(obj, index) {
+            //     $("hourlyDataText").innerText = obj.getHourlyData(index);
+            // }
         }
         /* ----------------------- Helferfunktionen -----------------------*/
 
