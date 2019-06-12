@@ -2,12 +2,14 @@
 
 window.addEventListener("load",
 
-    function () {
+    function async() {
 
         // Ortsvariablen
         const apiKey = "27545a642fad3717f02bac70d150c024";
         const weatherUrl = "http://api.openweathermap.org/data/2.5/weather";
-        var city = "Ulsnis";
+        var city;
+        var currentLat;
+        var currentLong;
         var country = "de";
         var loggedInUser;
 
@@ -15,8 +17,11 @@ window.addEventListener("load",
         var currentDayval;
         var hoursByDay;
 
-        // Bei Start der Anwendung wird der Startbildschirm aufgerufen
-        callHomeScreen();
+        // Bei Start der Anwendung wird die aktuelle Location des Nutzers 
+        // und im Anschluss der Startbildschirm aufgerufen
+        getGeoLocation().then(() => {
+            callHomeScreen();
+        })
 
         /* ----------------------- Ortsuche -----------------------*/
 
@@ -115,11 +120,12 @@ window.addEventListener("load",
 
             fetch(searchUrl)
                 .then(response => {
-                    return response.json();
+                  return response.json();
                 })
                 .then(data => {
                     console.log(data);
-
+                    clearScreen();
+                    callHomeScreen(data);   
 
                 })
 
@@ -127,44 +133,24 @@ window.addEventListener("load",
 
         /* ----------------------- Geolocation -----------------------*/
 
-        function getGeoLocation() {
-            navigator.geolocation.getCurrentPosition(updatelocation, locationError);
+        async function getGeoLocation() {
+            return geolocation().then((data) => updateLocation(data))
         }
 
-        function updatelocation() {
-
+        function geolocation() {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    data => {
+                        resolve(data);
+                    }
+                );
+            });
         }
 
-        function locationError() {
-            switch (e.code) {
-                case e.UNKNOWN_ERROR:
-                    console.log("UNKNOWN_ERROR");
-                    console.log("Error message: " + e.message);
-                    break;
-                case e.PERMISSION_DENIED:
-                    console.log("PERMISSION_DENIED");
-                    console.log("Error message: " + e.message);
-                    break;
-                case e.POSITION_UNAVAILABLE:
-                    console.log("POSITION_UNAVAILABLE");
-                    console.log("Error message: " + e.message);
-                    break;
-                case e.TIMEOUT:
-                    console.log("TIMEOUT");
-                    console.log("Error message: " + e.message);
-                    break;
-                default:
-                    console.log("Unbekannter Fehlercode");
-                    console.log("Error message: " + e.message);
-                    break;
-            }
+        function updateLocation(pos) {
+            currentLat = pos.coords.latitude;
+            currentLong = pos.coords.longitude;
         }
-
-
-
-
-
-
 
 
 
@@ -283,12 +269,12 @@ window.addEventListener("load",
             // Daten aus den Input-Feldern auslesen
             var username = $("regUser").value;
             var password = $("regPw").value;
-            var favourites;
+            var favorites;
 
             var user = {
                 username: username,
                 password: password,
-                favourites: []
+                favorites: []
             };
 
             // Überprüfen, ob Nutzer bereits registriert ist.
@@ -315,12 +301,12 @@ window.addEventListener("load",
             // Auslesen der Eingabefelder
             var username = $("loginUser").value;
             var password = $("loginPw").value;
-            var favourites;
+            var favorites;
             // Anlegen eines neuen User-Objekts
             var user = {
                 username: username,
                 password: password,
-                favourites: []
+                favorites: []
             };
 
             // Wurde kein Nutzername eingegeben, wird eine Fehlermeldung angezeigt
@@ -361,20 +347,21 @@ window.addEventListener("load",
 
 
 
-
-
-
-
         // Die Funktion callHomeScreen ruft den Startbildschirm auf und lädt die aktuellen 
         // Wetterdaten und Vorhersagedaten in die entsprechenden Elemente
-        function callHomeScreen() {
+        function callHomeScreen(fav) {
 
             clearScreen();
             /* ----------------------- OpenWeather API -----------------------*/
             //------------------ Aktuelle Wetterdaten
 
+            if(fav === null){
+                
+            }
+            
 
-            var currentWeatherAPI = `${weatherUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
+            //var currentWeatherAPI = `${weatherUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
+            var currentWeatherAPI = `${weatherUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
 
             // Anfrage senden und erst nach Empfangen der Daten weitermachen (then)
             fetch(currentWeatherAPI)
@@ -382,9 +369,13 @@ window.addEventListener("load",
                     return response.json(); // in Json umwandeln 
                 })
                 .then(data => {
+
+                    checkFavorite(data.sys.id)
+
                     const { temp, humidity, pressure } = data.main; // deklaration der kurzform der wetter variablen
                     var tempRounded = Math.round(temp * 10) / 10; // temperatur auf eine Dezimalstelle auf- bzw. abrunden
 
+                    console.log(data);
                     // DOM Elemente mit aktuellen Wetterangaben füllen
                     $("degrees").textContent = tempRounded + "°C";
                     $("windSpeed").textContent = "Windstärke: " + data.wind.speed + " m/s";
@@ -398,6 +389,7 @@ window.addEventListener("load",
                     $("description").textContent = data.weather[0].description;
                     $("currentTime").textContent = convertTime(data.dt) + " Uhr";
                     $("currentDate").textContent = convertDate(data.dt);
+                    $("cityName").textContent = data.name;
 
                     currentDayval = convertDate(data.dt);
                 })
@@ -405,8 +397,9 @@ window.addEventListener("load",
             //------------------ Vorhersagedaten
 
             var forecastUrl = "http://api.openweathermap.org/data/2.5/forecast";
-            var forecastAPI = `${forecastUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
+            var forecastAPI = `${forecastUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
 
+            console.log(forecastAPI);
             fetch(forecastAPI)
                 .then(response => {
                     return response.json();
@@ -460,13 +453,36 @@ window.addEventListener("load",
                 });
 
 
+            /* ----------------------- Favoriten -----------------------*/
 
+            // Bei Aufruf der
+            function callFaveScreen() {
+                clearScreen();
+                $("parentDiv").appendChild(new FaveObj);
+            }
 
+            // Funktion überprüft ob momentan ein Nutzer angemeldet ist. 
+            // Nur falls dieser Angemeldet ist, wird geprüft, ob die aktuelle Id 
+            // des Ortes bereits in seinen Favoriten im Local Storage gespeichert ist. 
+            // Wenn nein, wird der Favorit hinzugefügt, ansonsten ignoriert. 
+            function checkFavorite(id) {
+                if(loggedInUser === undefined)
+                    return
 
+                    // Nutzer aus Local Storage rausziehen
+                var user = JSON.parse(localStorage.getItem(loggedInUser))
 
-
-
-
+                var ifAddNeccessary = true;
+                user.favorites.forEach((favorite) => {
+                    if (favorite === id)
+                        ifAddNeccessary = false;
+                })
+            
+                if (ifAddNeccessary) {
+                    user.favorites.push(id)
+                    localStorage.setItem(loggedInUser, JSON.stringify(user))
+                }
+            }
 
             /* ----------------------- UI Elemente -----------------------*/
 
@@ -480,17 +496,34 @@ window.addEventListener("load",
                 callHomeScreen();
             });
 
+
+
             // Loginbutton, Nutzermenü und Logoutbutton je nach Nutzerstatus anzeigen lassen
             if (localStorage.getItem("currentUser") !== null) {
                 // loggedInUser = JSON.parse(localStorage.getItem("currentUser"));
                 loggedInUser = localStorage.getItem("currentUser");
                 $("loginButton").textContent = loggedInUser;
+                getfavorites();
                 getUserMenu();
                 getLogoutButton();
             } else {
                 $("loginButton").textContent = "Login";
                 removeUserMenu();
                 removeLogoutButton();
+            }
+
+
+            function getfavorites() {
+                newDiv("favesDiv", $("navWrapper"));
+                $("favesDiv").addEventListener("click", function () {
+                    callFaveScreen();
+                });
+                var favIcon = document.createElement("img");
+                favIcon.id = "favIcon";
+                favIcon.src = "https://img.icons8.com/clouds/50/000000/like.png";
+                favIcon.height = "50";
+                favIcon.width = "50";
+                $("favesDiv").appendChild(favIcon);
             }
 
             function getUserMenu() {
@@ -612,9 +645,7 @@ window.addEventListener("load",
             newDiv("forecast", parent);
             newDiv("fiveDaysLabel", forecast);
             $("fiveDaysLabel").innerText = "5-Tage-Vorhersage";
-            // Vorhersagebereich - Diagramm pro Tag
-            newDiv("curveWeek", forecast);
-            $("curveWeek").innerText = "Kurve: ganze Woche!"
+
             // 5-Tage-Kacheln
             newDiv("fiveDayWrapper", forecast);
 
@@ -651,9 +682,6 @@ window.addEventListener("load",
 
             newDiv("dailyForecastWrapper", forecast);
 
-            // Vorhersagebereich - Diagramm pro Tag
-            newDiv("curve", dailyForecastWrapper);
-            $("curve").innerText = "Kurve pro Tag!"
 
             // Vorhersagebereich - Stundenansicht
             newDiv("hourlyWrapper", dailyForecastWrapper);
@@ -718,6 +746,57 @@ window.addEventListener("load",
                     }
                 }
             };
+
+
+            /* ----------------------- Custom Element -----------------------*/
+
+
+            // BEI AUFRUF
+            //    $('contentContainer').append(new LoginCard());
+
+            class FaveObj extends HTMLElement {
+                constructor(cityId, cityName, countryInit, currentTemp, descr) {
+                    super();
+                    this.cityId = cityId;
+                    this.cityName = cityName;
+                    this.countryInit = countryInit;
+                    this.currentTemp = currentTemp;
+                    this.descr = descr;
+
+                    this.objBox = document.createElement("div");
+                    this.drawThis();
+
+
+                }
+
+                drawThis() {
+                    var objectContainer = document.createElement("div");
+                    this.objBox.append(objectContainer);
+                    var objTitle = document.createElement("div");
+                    objTitle.textContent = cityName;
+                    console.log(cityName);
+                     // newDiv("objTitle",$("objectContainer"));
+                    // $("objTitle").textContent = cityName;
+
+                    console.log(this);
+                    console.log(this.objBox);
+
+                    
+                    // newDiv("objTitle",$("objectContainer"));
+                    // $("objTitle").textContent = cityName;                    
+
+
+                }
+
+
+            }
+
+
+            // Das Custom Element FaveCard muss dem Window bekannt gemacht werden.
+            window.customElements.define('fave-card', FaveObj);
+
+
+
 
             function setHourlyData(obj, index) {
                 $("hourlyDataText").innerText = obj.getHourlyData(index);

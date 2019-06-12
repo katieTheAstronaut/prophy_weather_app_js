@@ -6,6 +6,10 @@ body {
     font-family: sans-serif;
 }
 
+input{
+    text-align: center;
+}
+
 /* ----------------------- Header und Navigationselemente -----------------------*/
 
 #header {
@@ -47,7 +51,7 @@ body {
 }
 
 #navWrapper {
-    width: 150px;
+    width: 200px;
     display: flex;
 }
 
@@ -55,6 +59,12 @@ body {
     height: 30px;
     width: 30px;
     padding-left: 20px;
+}
+
+#favesDiv {
+    height: 30px;
+    width: 30px;
+    padding-right: 20px;
 }
 
 /* Nutzermenü */
@@ -436,4 +446,13 @@ body {
     border: none;
     margin-top: 2%;
     font-size: 0.6em;
+}
+
+/* ----------------------- Custom-Element (Favoriten-Objekt) -----------------------*/
+
+#objectContainer{
+    width: 500px;
+    height: 200px;
+    border-radius: 50px;
+    background-color: white;
 }
