@@ -10,7 +10,7 @@ window.addEventListener("load",
         var city;
         var currentLat;
         var currentLong;
-        var country = "de";
+        var country;
         var loggedInUser;
 
         var dailyObj;
@@ -117,18 +117,21 @@ window.addEventListener("load",
                 searchQuery = "lat=" + $("searchCoordLa").value + "&lon=" + $("searchCoordLo").value;
             }
 
-            var searchUrl = `${weatherUrl}?` + searchQuery + `&appid=${apiKey}&lang=de&units=metric`;
-
+            var searchUrl =
+                `${weatherUrl}?` +
+                searchQuery +
+                `&appid=${apiKey}&lang=de&units=metric`;
 
             try {
-                let data = await fetch(searchURL)
+                let data = await fetch(searchUrl);
+                console.log(data);
                 if (!data.ok) {
                     throw Error(data.statusText);
                 }
                 data = data.json();
-                callHomeScreen(data)
+                callHomeScreen(data);
             } catch (e) {
-                alert("Ort existiert nicht.")
+                alert('Ort existiert nicht.');
             }
         }
 
@@ -385,7 +388,7 @@ window.addEventListener("load",
             var { temp, humidity, pressure } = data.main; // deklaration der kurzform der wetter variablen
             var tempRounded = Math.round(temp * 10) / 10; // temperatur auf eine Dezimalstelle auf- bzw. abrunden
 
-            console.log(tempRounded);
+            console.log(data);
             // DOM Elemente mit aktuellen Wetterangaben füllen
             $("degrees").textContent = tempRounded + "°C";
             $("windSpeed").textContent = "Windstärke: " + data.wind.speed + " m/s";
@@ -400,6 +403,7 @@ window.addEventListener("load",
             $("currentTime").textContent = convertTime(data.dt) + " Uhr";
             $("currentDate").textContent = convertDate(data.dt);
             $("cityName").textContent = data.name;
+            $("countryName").textContent = data.sys.country;
             $("weatherImg").src = "http://openweathermap.org/img/w/" + data.weather[0].icon + ".png"
 
             currentDayval = convertDate(data.dt);
@@ -555,17 +559,53 @@ window.addEventListener("load",
                 container.className = "hourContainers";
                 this.hourBox.append(container)
 
+                var hourLeftCont = document.createElement("div");
+                hourLeftCont.id = "hourLeftCont";
+                container.append(hourLeftCont);
+                
                 var hourTitle = document.createElement("div");
                 hourTitle.className = "hourTitle";
                 hourTitle.textContent = convertTime(this.hour.dt);
-                container.append(hourTitle);
+                hourLeftCont.append(hourTitle);
 
                 var hourTemp = document.createElement("div");
                 hourTemp.id = "hourTemp";
-                hourTemp.textContent = this.hourTemp;
-                container.append(hourTemp);
+                hourTemp.textContent = this.hour.main.temp + "°C";
+                hourLeftCont.append(hourTemp);
 
+                var hourdesc = document.createElement("div");
+                hourdesc.id = "hourdesc";
+                hourdesc.textContent = this.hour.weather[0].description;
+                hourLeftCont.append(hourdesc);
 
+                var hourInnerCont = document.createElement("div");
+                hourInnerCont.id = "hourInnerCont";
+                container.append(hourInnerCont);
+
+                var hourwind = document.createElement("div");
+                hourwind.id = "hourwind";
+                hourwind.textContent = "Windstärke: " + this.hour.wind.speed + " m/s";
+                hourInnerCont.append(hourwind);
+
+                var hourwindDir = document.createElement("div");
+                hourwindDir.id = "hourwindDir";
+                hourwindDir.textContent = "Windrichtung: " + this.hour.wind.deg + "°";
+                hourInnerCont.append(hourwindDir);
+
+                var hourHumid = document.createElement("div");
+                hourHumid.id = "hourHumid";
+                hourHumid.textContent = "Luftfeuchtigkeit: " + this.hour.main.humidity + " %";
+                hourInnerCont.append(hourHumid);
+
+                var hourPress = document.createElement("div");
+                hourPress.id = "hourPress";
+                hourPress.textContent = "Luftdruck: " + this.hour.main.pressure + " hPa";
+                hourInnerCont.append(hourPress);
+
+                var hourClouds = document.createElement("div");
+                hourClouds.id = "hourClouds";
+                hourClouds.textContent = "Bewölkung: " + this.hour.clouds.all + " %";
+                hourInnerCont.append(hourClouds);
 
                 console.log(this.hour)
 
@@ -756,7 +796,6 @@ window.addEventListener("load",
             newDiv('cityName', dailyLeft);
             $('cityName').innerText = city;
             newDiv('countryName', dailyLeft);
-            $('countryName').innerText = country.toUpperCase();
             newDiv('dataWrapper', dailyLeft);
             newDiv('data', dataWrapper);
 
@@ -821,6 +860,8 @@ window.addEventListener("load",
 
                 var objTitle = document.createElement("div");
                 objTitle.id = "objTitle";
+                objTitle.textContent = this.cityName;
+                objectContainer.append(objTitle);
                 var objCountry = document.createElement("div");
                 objCountry.id = "objCountry";
                 objCountry.textContent = this.countryInit;

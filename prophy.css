@@ -1,5 +1,5 @@
-html{
-    height:100%;
+html {
+    height: 100%;
 }
 
 body {
@@ -83,8 +83,7 @@ input {
     right: 20px;
 }
 
-#editProfile,
-#deleteUser {
+#editProfile, #deleteUser {
     padding: 5px 10px;
 }
 
@@ -92,10 +91,8 @@ input {
 
 #parentDiv {
     width: 100%;
-    height: 1400px;
-    /* background-image: url('https://images.pexels.com/photos/2088203/pexels-photo-2088203.jpeg?auto=format%2Ccompress&cs=tinysrgb&dpr=1&w=500'); */
-    background-size: cover;
-    background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
+    height: 2400px;
+    background-color: rgb(196, 248, 237); 
     display: flex;
     flex-direction: column;
 }
@@ -200,7 +197,7 @@ input {
     margin: 20px auto;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
 }
 
 .days {
@@ -211,6 +208,7 @@ input {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin: 0 10px;
 }
 
 #day0 {
@@ -225,16 +223,12 @@ input {
     height: 300%;
     width: 90%;
     margin: 0 auto;
-    border: solid thin;
-    border-color: white;
-    background-color: rgba(216, 230, 241, 0.774);
 }
 
-#curve,
-#curveWeek {
+#curve, #curveWeek {
     width: 70%;
     margin: 0 auto;
-   text-align: center;
+    text-align: center;
 }
 
 #hourlyWrapper {
@@ -310,9 +304,7 @@ input {
     margin: 0 auto;
 }
 
-#loginUser,
-#loginPw,
-#loginBtn {
+#loginUser, #loginPw, #loginBtn {
     height: 30px;
     width: 70%;
     border-radius: 5px;
@@ -368,9 +360,7 @@ input {
     margin: 0 auto;
 }
 
-#regUser,
-#regPw,
-#regBtn {
+#regUser, #regPw, #regBtn {
     height: 30px;
     width: 70%;
     border-radius: 5px;
@@ -420,9 +410,7 @@ input {
     font-size: 2em;
 }
 
-#searchPlace,
-#searchZip,
-#searchBtn {
+#searchPlace, #searchZip, #searchBtn {
     height: 30px;
     width: 50%;
     border-radius: 5px;
@@ -430,8 +418,7 @@ input {
     margin-top: 2%;
 }
 
-#searchCoordLo,
-#searchCoordLa {
+#searchCoordLo, #searchCoordLa {
     height: 30px;
     width: 34%;
     border-radius: 5px;
@@ -440,9 +427,7 @@ input {
     font-size: 0.6em;
 }
 
-#searchCoordLo,
-#searchPlace,
-#searchZip {
+#searchCoordLo, #searchPlace, #searchZip {
     margin-right: 2%;
 }
 
@@ -450,8 +435,7 @@ input {
     margin-top: 5%;
 }
 
-#searchCountryPlace,
-#searchCountry {
+#searchCountryPlace, #searchCountry {
     height: 30px;
     width: 22%;
     border-radius: 5px;
@@ -499,25 +483,26 @@ input {
     cursor: pointer;
 }
 
-
 /* ----------------------- Custom-Element (Stundenansicht-Objekt) -----------------------*/
-.hourContainers {
 
-    height: 50px;
-    width: 100px;
+.hourContainers {
+    height: 150px;
+    width: 500px;
     border-radius: 50px;
-    background-color: white;
+    background-image: linear-gradient(-225deg, #FFE6FA 50%, #E3FDF5 50%);
     padding: 20px;
+    margin: 0 auto;
     margin-top: 10px;
 }
 
-/* ----------------------- Custom-Element (Stundenansicht-Objekt) -----------------------*/
-.hourContainers {
+.hourTitle {
+    font-size: 1.6em;
+}
 
-    height: 50px;
-    width: 100px;
-    border-radius: 50px;
-    background-color: white;
-    padding: 20px;
-    margin-top: 10px;
+#hourLeftCont {
+    float: left;
+}
+
+#hourInnerCont {
+    float: right;
 }
