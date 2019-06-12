@@ -344,55 +344,64 @@ window.addEventListener("load",
             localStorage.removeItem(loggedInUser);
         }
 
+        function getData(fav) {
+            return new Promise((resolve, reject) => {
+                if (fav === undefined) {
+                    //var currentWeatherAPI = `${weatherUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
+                    var currentWeatherAPI = `${weatherUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
 
+                    // Anfrage senden und erst nach Empfangen der Daten weitermachen (then)
+                    fetch(currentWeatherAPI)
+                        .then(response => {
+                            return response.json(); // in Json umwandeln
+                        })
+                        .then(data => {
+                            resolve(data);
+                        })
+                        .catch(e => {
+                            reject(e);
+                        });
+                } else {
+                    resolve(fav);
+                }
+            });
+        }
 
-
-        // Die Funktion callHomeScreen ruft den Startbildschirm auf und lädt die aktuellen 
+        // Die Funktion callHomeScreen ruft den Startbildschirm auf und lädt die aktuellen
         // Wetterdaten und Vorhersagedaten in die entsprechenden Elemente
-        function callHomeScreen(fav) {
-
+        async function callHomeScreen(fav) {
             clearScreen();
+            createDay();
             /* ----------------------- OpenWeather API -----------------------*/
             //------------------ Aktuelle Wetterdaten
 
-            if (fav === null) {
+            var data = await getData(fav);
 
-            }
+            console.log(data);
 
+            checkFavorite(data.id);
 
-            //var currentWeatherAPI = `${weatherUrl}?q=${city},${country}&lang=de&units=metric&appid=${apiKey}`;
-            var currentWeatherAPI = `${weatherUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
+            var { temp, humidity, pressure } = data.main; // deklaration der kurzform der wetter variablen
+            var tempRounded = Math.round(temp * 10) / 10; // temperatur auf eine Dezimalstelle auf- bzw. abrunden
 
-            // Anfrage senden und erst nach Empfangen der Daten weitermachen (then)
-            fetch(currentWeatherAPI)
-                .then(response => {
-                    return response.json(); // in Json umwandeln 
-                })
-                .then(data => {
+            console.log(tempRounded);
+            // DOM Elemente mit aktuellen Wetterangaben füllen
+            $("degrees").textContent = tempRounded + "°C";
+            $("windSpeed").textContent = "Windstärke: " + data.wind.speed + " m/s";
+            $("humidity").textContent = "Luftfeuchtigkeit: " + humidity + "%";
+            $("windDegree").textContent = "Windrichtung: " + data.wind.deg + "°";
+            $("pressure").textContent = "Luftdruck: " + pressure + " hPa";
+            $("clouds").textContent = "Bewölkung: " + data.clouds.all + "%";
+            $("visibility").textContent = "Sichtweite: " + data.visibility + " m";
+            $("sunRise").textContent = "Sonnenaufgang: " + convertTime(data.sys.sunrise) + " Uhr";
+            $("sunSet").textContent = "Sonnenuntergang: " + convertTime(data.sys.sunset) + " Uhr";
+            $("description").textContent = data.weather[0].description;
+            $("currentTime").textContent = convertTime(data.dt) + " Uhr";
+            $("currentDate").textContent = convertDate(data.dt);
+            $("cityName").textContent = data.name;
 
-                    checkFavorite(data.id)
+            currentDayval = convertDate(data.dt);
 
-                    const { temp, humidity, pressure } = data.main; // deklaration der kurzform der wetter variablen
-                    var tempRounded = Math.round(temp * 10) / 10; // temperatur auf eine Dezimalstelle auf- bzw. abrunden
-
-                    console.log(data);
-                    // DOM Elemente mit aktuellen Wetterangaben füllen
-                    $("degrees").textContent = tempRounded + "°C";
-                    $("windSpeed").textContent = "Windstärke: " + data.wind.speed + " m/s";
-                    $("humidity").textContent = "Luftfeuchtigkeit: " + humidity + "%";
-                    $("windDegree").textContent = "Windrichtung: " + data.wind.deg + "°";
-                    $("pressure").textContent = "Luftdruck: " + pressure + " hPa";
-                    $("clouds").textContent = "Bewölkung: " + data.clouds.all + "%";
-                    $("visibility").textContent = "Sichtweite: " + data.visibility + " m";
-                    $("sunRise").textContent = "Sonnenaufgang: " + convertTime(data.sys.sunrise) + " Uhr";
-                    $("sunSet").textContent = "Sonnenuntergang: " + convertTime(data.sys.sunset) + " Uhr";
-                    $("description").textContent = data.weather[0].description;
-                    $("currentTime").textContent = convertTime(data.dt) + " Uhr";
-                    $("currentDate").textContent = convertDate(data.dt);
-                    $("cityName").textContent = data.name;
-
-                    currentDayval = convertDate(data.dt);
-                })
 
             //------------------ Vorhersagedaten
 
@@ -533,6 +542,7 @@ window.addEventListener("load",
                 $("loginButton").textContent = "Login";
                 removeUserMenu();
                 removeLogoutButton();
+                removeFavorites();
             }
 
 
@@ -548,6 +558,13 @@ window.addEventListener("load",
                 favIcon.width = "50";
                 $("favesDiv").appendChild(favIcon);
             }
+
+            function removeFavorites() {
+                if ($("favesDiv") != null) {
+                    $("favesDiv").parentElement.removeChild($("favesDiv"));
+                }
+            }
+
 
             function getUserMenu() {
                 newDiv("profileMenu", $("navWrapper"));
@@ -621,130 +638,128 @@ window.addEventListener("load",
             }
 
 
-            // Tagesansicht erstellen
-            newDiv("dailyWrapper", parent);
-            newDiv("dailyLeft", dailyWrapper);
-            newDiv("dailyMiddle", dailyWrapper);
-            newDiv("dailyRight", dailyWrapper);
+            function createDay() {
+                var parent = $('parentDiv');
 
-            // Tageansicht linke Seite
-            newDiv("cityName", dailyLeft);
-            $("cityName").innerText = city;
-            newDiv("countryName", dailyLeft);
-            $("countryName").innerText = country.toUpperCase();
-            newDiv("dataWrapper", dailyLeft);
-            newDiv("data", dataWrapper);
-            newDiv("windSpeed", data);
-            newDiv("windDegree", data);
-            newDiv("humidity", data);
-            newDiv("precipitation", data);
-            newDiv("pressure", data);
-            newDiv("clouds", data);
-            newDiv("visibility", data);
-            newDiv("sunRise", data);
-            newDiv("sunSet", data);
+                newDiv('dailyWrapper', parent);
+                newDiv('dailyLeft', dailyWrapper);
+                newDiv('dailyMiddle', dailyWrapper);
+                newDiv('dailyRight', dailyWrapper);
 
+                // Tageansicht linke Seite
+                newDiv('cityName', dailyLeft);
+                $('cityName').innerText = city;
+                newDiv('countryName', dailyLeft);
+                $('countryName').innerText = country.toUpperCase();
+                newDiv('dataWrapper', dailyLeft);
+                newDiv('data', dataWrapper);
 
-            // Tagesansicht mitte
-            var weatherImg = document.createElement("img");
-            weatherImg.src = "sun.png"
-            newDiv("weatherIcon", dailyMiddle);
-            weatherImg.height = "200";
-            $("weatherIcon").appendChild(weatherImg);
+                var data = $('data');
 
-            // Tagesansicht rechte Seite
-            newDiv("currentDate", dailyRight);
-            newDiv("currentTime", dailyRight);
-            newDiv("description", dailyRight);
-            newDiv("degrees", dailyRight);
-            $("degrees").innerText = "0";
+                newDiv('windSpeed', data);
+                newDiv('windDegree', data);
+                newDiv('humidity', data);
+                newDiv('precipitation', data);
+                newDiv('pressure', data);
+                newDiv('clouds', data);
+                newDiv('visibility', data);
+                newDiv('sunRise', data);
+                newDiv('sunSet', data);
 
-            // Trennlinie
-            newDiv("separator", parent);
+                // Tagesansicht mitte
+                var weatherImg = document.createElement('img');
+                weatherImg.src = 'sun.png';
+                newDiv('weatherIcon', dailyMiddle);
+                weatherImg.height = '200';
+                $('weatherIcon').appendChild(weatherImg);
 
+                // Tagesansicht rechte Seite
+                newDiv('currentDate', dailyRight);
+                newDiv('currentTime', dailyRight);
+                newDiv('description', dailyRight);
+                newDiv('degrees', dailyRight);
+                $('degrees').innerText = '0';
 
+                // Trennlinie
+                newDiv('separator', parent);
 
-            // Vorhersagebereich - 
-            newDiv("forecast", parent);
-            newDiv("fiveDaysLabel", forecast);
-            $("fiveDaysLabel").innerText = "5-Tage-Vorhersage";
+                // Vorhersagebereich -
+                newDiv('forecast', parent);
+                newDiv('fiveDaysLabel', forecast);
+                $('fiveDaysLabel').innerText = '5-Tage-Vorhersage';
 
-            // 5-Tage-Kacheln
-            newDiv("fiveDayWrapper", forecast);
+                // 5-Tage-Kacheln
+                newDiv('fiveDayWrapper', forecast);
 
-            for (var i = 0; i < 5; i++) {
-                newDiv("day" + (i), fiveDayWrapper);
-                $("day" + (i)).className = "days";
-                newDiv("upperDay" + (i), $("day" + (i)));
-                $("upperDay" + (i)).className = "dayInner";
-                newDiv("middleDay" + (i), $("day" + (i)));
-                $("middleDay" + (i)).className = "dayInner";
-                newDiv("lowerDay" + (i), $("day" + (i)));
-                $("lowerDay" + (i)).className = "dayInner";
-                var imgSun = document.createElement("img");
-                imgSun.id = "imgSun";
-                imgSun.src = "sun.png";
-                imgSun.height = "30";
-                imgSun.width = "30";
-                $("middleDay" + (i)).appendChild(imgSun);
-                $("lowerDay" + (i)).innerText = "13°";
+                for (var i = 0; i < 5; i++) {
+                    newDiv('day' + i, fiveDayWrapper);
+                    $('day' + i).className = 'days';
+                    newDiv('upperDay' + i, $('day' + i));
+                    $('upperDay' + i).className = 'dayInner';
+                    newDiv('middleDay' + i, $('day' + i));
+                    $('middleDay' + i).className = 'dayInner';
+                    newDiv('lowerDay' + i, $('day' + i));
+                    $('lowerDay' + i).className = 'dayInner';
+                    var imgSun = document.createElement('img');
+                    imgSun.id = 'imgSun';
+                    imgSun.src = 'sun.png';
+                    imgSun.height = '30';
+                    imgSun.width = '30';
+                    $('middleDay' + i).appendChild(imgSun);
+                    $('lowerDay' + i).innerText = '13°';
+                }
+
+                // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
+                for (var i = 0; i < 5; i++) {
+                    $('day' + i).addEventListener('click', function () {
+                        var allButtons = document.getElementsByClassName('days');
+                        for (var i = 0; i < allButtons.length; i++) {
+                            allButtons[i].style.backgroundColor = 'lightgrey';
+                        }
+                        this.style.backgroundColor = 'white';
+                    });
+                }
+
+                newDiv('dailyForecastWrapper', forecast);
+
+                // Vorhersagebereich - Stundenansicht
+                newDiv('hourlyWrapper', dailyForecastWrapper);
+                newDiv('hourlyButtonsWrapper', hourlyWrapper);
+
+                for (var i = 0; i < 8; i++) {
+                    var btn = document.createElement('button');
+                    btn.id = 'hours' + i;
+                    btn.className = 'hours';
+                    hourlyButtonsWrapper.appendChild(btn);
+                }
+
+                // Gedrückten StundenButton farblich abheben und andere Buttons zurücksetzen
+                for (var i = 0; i < 8; i++) {
+                    $('hours' + i).addEventListener('click', function () {
+                        var allButtons = document.getElementsByClassName('hours');
+                        for (var i = 0; i < allButtons.length; i++) {
+                            allButtons[i].style.backgroundColor = 'lightgrey';
+                            console.log('wetter' + dailyObj.weatherIndex);
+                        }
+                        setHourlyData(dailyObj, i); // je nach Button
+                        this.style.backgroundColor = 'white';
+                    });
+                }
+
+                $('hours0').innerText = '02:00';
+                $('hours1').innerText = '05:00';
+                $('hours2').innerText = '08:00';
+                $('hours3').innerText = '11:00';
+                $('hours4').innerText = '14:00';
+                $('hours5').innerText = '17:00';
+                $('hours6').innerText = '20:00';
+                $('hours7').innerText = '23:00';
+
+                newDiv('hourlyData', hourlyWrapper);
+                newDiv('hourlyDataText', hourlyData);
+                $('hourlyDataText').innerText =
+                    'Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ';
             }
-
-
-
-            // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
-            for (var i = 0; i < 5; i++) {
-                $("day" + (i)).addEventListener("click", function () {
-                    var allButtons = document.getElementsByClassName("days");
-                    for (var i = 0; i < allButtons.length; i++) {
-                        allButtons[i].style.backgroundColor = "lightgrey";
-                    }
-                    this.style.backgroundColor = "white";
-                });
-            }
-
-            newDiv("dailyForecastWrapper", forecast);
-
-
-            // Vorhersagebereich - Stundenansicht
-            newDiv("hourlyWrapper", dailyForecastWrapper);
-            newDiv("hourlyButtonsWrapper", hourlyWrapper);
-
-            for (var i = 0; i < 8; i++) {
-                var btn = document.createElement("button");
-                btn.id = "hours" + (i);
-                btn.className = "hours";
-                hourlyButtonsWrapper.appendChild(btn);
-            }
-
-            // Gedrückten StundenButton farblich abheben und andere Buttons zurücksetzen
-            for (var i = 0; i < 8; i++) {
-                $("hours" + (i)).addEventListener("click", function () {
-                    var allButtons = document.getElementsByClassName("hours");
-                    for (var i = 0; i < allButtons.length; i++) {
-                        allButtons[i].style.backgroundColor = "lightgrey";
-                        console.log("wetter" + dailyObj.weatherIndex);
-
-                    }
-                    setHourlyData(dailyObj, i); // je nach Button
-                    this.style.backgroundColor = "white";
-                });
-            }
-
-            $("hours0").innerText = "02:00";
-            $("hours1").innerText = "05:00";
-            $("hours2").innerText = "08:00";
-            $("hours3").innerText = "11:00";
-            $("hours4").innerText = "14:00";
-            $("hours5").innerText = "17:00";
-            $("hours6").innerText = "20:00";
-            $("hours7").innerText = "23:00";
-
-
-            newDiv("hourlyData", hourlyWrapper);
-            newDiv("hourlyDataText", hourlyData);
-            $("hourlyDataText").innerText = "Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ";
-
             // Klassenobjekt mit allen Daten zur Vorhersage
 
             class DayObj {
@@ -824,7 +839,7 @@ window.addEventListener("load",
 
                     var deleteIcon = document.createElement("img");
                     deleteIcon.id = "deleteIcon";
-                    deleteIcon.src = "https://img.icons8.com/cotton/64/000000/delete-sign.png";
+                    deleteIcon.src = "https://img.icons8.com/cute-clipart/64/000000/delete-sign.png";
                     deleteIcon.height = "50";
                     deleteIcon.width = "50";
                     deleteBtn.append(deleteIcon);

@@ -78,7 +78,8 @@ input {
     right: 20px;
 }
 
-#editProfile, #deleteUser {
+#editProfile,
+#deleteUser {
     padding: 5px 10px;
 }
 
@@ -89,7 +90,7 @@ input {
     height: 1400px;
     /* background-image: url('https://images.pexels.com/photos/2088203/pexels-photo-2088203.jpeg?auto=format%2Ccompress&cs=tinysrgb&dpr=1&w=500'); */
     background-size: cover;
-    background-image: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%);
+    background-image: linear-gradient(-225deg, #e3fdf5 0%, #ffe6fa 100%);
     background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
     /* background: linear-gradient(rgb(214, 250, 114), rgb(16, 60, 95)90%);*/
     display: flex;
@@ -223,10 +224,11 @@ input {
     margin: 0 auto;
     border: solid thin;
     border-color: white;
-    background-color: rgba(216, 230, 241, 0.774)
+    background-color: rgba(216, 230, 241, 0.774);
 }
 
-#curve, #curveWeek {
+#curve,
+#curveWeek {
     width: 70%;
     margin: 0 auto;
     height: 200px;
@@ -289,7 +291,7 @@ input {
     border-radius: 50px;
     margin: 0 auto;
     text-align: center;
-    background-image: linear-gradient(-225deg, #E3FDF5 50%, #FFE6FA 50%);
+    background-image: linear-gradient(-225deg, #e3fdf5 50%, #ffe6fa 50%);
 }
 
 #loginTitleWrapper {
@@ -308,7 +310,9 @@ input {
     margin: 0 auto;
 }
 
-#loginUser, #loginPw, #loginBtn {
+#loginUser,
+#loginPw,
+#loginBtn {
     height: 30px;
     width: 70%;
     border-radius: 5px;
@@ -345,7 +349,7 @@ input {
     border-radius: 50px;
     margin: 0 auto;
     text-align: center;
-    background-image: linear-gradient(-225deg, #E3FDF5 50%, #FFE6FA 50%);
+    background-image: linear-gradient(-225deg, #e3fdf5 50%, #ffe6fa 50%);
 }
 
 #regTitleWrapper {
@@ -364,7 +368,9 @@ input {
     margin: 0 auto;
 }
 
-#regUser, #regPw, #regBtn {
+#regUser,
+#regPw,
+#regBtn {
     height: 30px;
     width: 70%;
     border-radius: 5px;
@@ -382,7 +388,7 @@ input {
     height: 30px;
     width: 30%;
     font-size: 0.5em;
-    margin: 2%
+    margin: 2%;
 }
 
 /* ----------------------- Such-Elemente -----------------------*/
@@ -401,7 +407,7 @@ input {
     border-radius: 50px;
     margin: 0 auto;
     text-align: center;
-    background-image: linear-gradient(-225deg, #FFE6FA 50%, #E3FDF5 50%);
+    background-image: linear-gradient(-225deg, #ffe6fa 50%, #e3fdf5 50%);
 }
 
 #searchTitleWrapper {
@@ -414,7 +420,9 @@ input {
     font-size: 2em;
 }
 
-#searchPlace, #searchZip, #searchBtn {
+#searchPlace,
+#searchZip,
+#searchBtn {
     height: 30px;
     width: 50%;
     border-radius: 5px;
@@ -422,7 +430,8 @@ input {
     margin-top: 2%;
 }
 
-#searchCoordLo, #searchCoordLa {
+#searchCoordLo,
+#searchCoordLa {
     height: 30px;
     width: 34%;
     border-radius: 5px;
@@ -431,15 +440,18 @@ input {
     font-size: 0.6em;
 }
 
-#searchCoordLo, #searchPlace, #searchZip {
-    margin-right: 2%
+#searchCoordLo,
+#searchPlace,
+#searchZip {
+    margin-right: 2%;
 }
 
 #searchBtn {
     margin-top: 5%;
 }
 
-#searchCountryPlace, #searchCountry {
+#searchCountryPlace,
+#searchCountry {
     height: 30px;
     width: 22%;
     border-radius: 5px;
