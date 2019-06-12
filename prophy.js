@@ -14,6 +14,7 @@ window.addEventListener("load",
         var loggedInUser;
 
         var dailyObj;
+        var numberOfDays;
         var currentDayval;
         var hoursByDay;
 
@@ -101,7 +102,7 @@ window.addEventListener("load",
         }
 
         // Funktion um den passenden Ort zu den Suchparametern zu finden
-        function search() {
+        async function search() {
 
             var searchQuery;
 
@@ -116,18 +117,19 @@ window.addEventListener("load",
                 searchQuery = "lat=" + $("searchCoordLa").value + "&lon=" + $("searchCoordLo").value;
             }
 
-            var searchUrl = `${weatherUrl}?` + searchQuery + `&appid=${apiKey}`;
+            var searchUrl = `${weatherUrl}?` + searchQuery + `&appid=${apiKey}&lang=de&units=metric`;
 
-            fetch(searchUrl)
-                .then(response => {
-                    return response.json();
-                })
-                .then(data => {
-                    console.log(data);
-                    clearScreen();
-                    callHomeScreen(data)
-                }).catch(e => console.log(e))
 
+            try {
+                let data = await fetch(searchURL)
+                if (!data.ok) {
+                    throw Error(data.statusText);
+                }
+                data = data.json();
+                callHomeScreen(data)
+            } catch (e) {
+                alert("Ort existiert nicht.")
+            }
         }
 
         /* ----------------------- Geolocation -----------------------*/
@@ -376,7 +378,7 @@ window.addEventListener("load",
 
             var data = await getData(fav);
 
-            console.log(data);
+            // console.log(data);
 
             checkFavorite(data.id);
 
@@ -398,23 +400,19 @@ window.addEventListener("load",
             $("currentTime").textContent = convertTime(data.dt) + " Uhr";
             $("currentDate").textContent = convertDate(data.dt);
             $("cityName").textContent = data.name;
+            $("weatherImg").src = "http://openweathermap.org/img/w/" + data.weather[0].icon + ".png"
 
             currentDayval = convertDate(data.dt);
 
 
             //------------------ Vorhersagedaten
+            createDayForecast();
+        }
 
-
-            // erstellt eine Anfrage URL aus einer übergebenen StadtID
-            async function createWeatherCityIdLink(id) {
-                let link = `http://api.openweathermap.org/data/2.5/weather?id=${id}&appid=${apiKey}&lang=de`;
-                return link;
-            }
+        function createDayForecast() {
 
             var forecastUrl = "http://api.openweathermap.org/data/2.5/forecast";
             var forecastAPI = `${forecastUrl}?lat=${currentLat}&lon=${currentLong}&lang=de&units=metric&appid=${apiKey}`;
-
-            console.log(forecastAPI);
             fetch(forecastAPI)
                 .then(response => {
                     return response.json();
@@ -422,50 +420,102 @@ window.addEventListener("load",
                 .then(data => {
                     console.log(data);
 
-                    // die folgenden 5 Tage für Vorschau auswählen
-                    // var weekDays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
-                    // var currentDay = 0;
-                    // for (var i = -1; i < 4; i++) {
-                    //     $("upperDay" + (currentDay)).textContent = weekDays[(convertWeekDay(data.list[0].dt) + (i + 1)) % 7];
-                    //     currentDay++;
-                    // }
+                    // Funktion zum Aufteilen der erhaltenen 40 Daten in die verschiedenen Tage
+                    var days = []
+                    var hours = []
 
+                    var currentDay = convertWeekDay(data.list[0].dt); // Erster Wochentag
 
-                    // go through list array and sort hours into respective days
-                    // for (var i = 0; i < 40; i++) {
-                    //     if (convertWeekDay(data.list[i].dt) === convertWeekDay(data.list[i].dt)) {
-                    //         hoursByDay.push(convertTime(data.list[i].dt));
-                    //     }
+                    // Schleife läuft durch gesamte Liste der erhaltenen Daten
+                    for (var i = 0; i < data.list.length; i++) {
+                        // Ist der Eintrag Teil des aktuellen Tages, 
+                        // wird der Eintrag auf den Array des aktuellen tages geschoben
+                        if (currentDay === convertWeekDay(data.list[i].dt)) {
+                            hours.push(data.list[i])
 
-                    // console.log(convertDate(data.list[i].dt) + "," + convertTime(data.list[i].dt));
-                    // }
+                            // Andernfalls wird der aktuelle Tag auf den nächsten gewechselt
+                            // und der Tagesarray geleert, sowie das letzte Element auf den neuen Tag gepusht.
+                        } else {
+                            currentDay = convertWeekDay(data.list[i].dt);
+                            days.push(hours);
+                            hours = [];
+                            hours.push(data.list[i])
+                        }
+
+                        // ist es der letzte Tag, wird dieser ebenfalls auf den days-array geschoben,
+                        // da hier kein "else" mehr ausgeführt werden würde und dieser Eintrag sonst verloren geht. 
+                        if (!data.list[i + 1])
+                            days.push(hours)
+                    }
+                    console.log(days);
+
+                    numberOfDays = days.length;
+                    console.log(numberOfDays);
 
                     // Objektarrays füllen (Aufrufe in Mouselistener)
 
-                    var hourData = [
-                        ["1", "1", "1", "1", "1", "1", "1", "1"],
-                        ["2", "2", "2", "2", "2", "2", "2", "2"],
-                        ["3", "3", "3", "3", "3", "3", "3", "3"],
-                        ["4", "4", "4", "4", "4", "4", "4", "4"],
-                        ["5", "5", "5", "5", "5", "5", "5", "5"],
-                        ["1", "1", "1", "1", "1", "1", "1", "1"],
-                        ["2", "2", "2", "2", "2", "2", "2", "2"],
-                        ["3", "3", "3", "3", "3", "3", "3", "3"],
-                        ["4", "4", "4", "4", "4", "4", "4", "4"],
-                        ["5", "5", "5", "5", "5", "5", "5", "5"],
-                    ];
 
-                    // Objekt instanziieren pro Tag (derzeit nur erstes)
-                    dailyObj = new DayObj("Monday", "tempAtNoon", "icon", "weekCurve", hourData, 1);
 
-                    // setHourlyData(dailyObj, 0);
-
-                    console.log(data.list[0].dt);
-                    console.log(convertTime(data.list[0].dt));
 
                     // Kurvenansicht über Woche --> Temperatur: als Zeit immer 14:00 auswählen pro Tag
+                    return days;
+                }).then(days => {
+                    console.log(days);
 
+                    // Vorhersagebereich -
+                    newDiv('forecast', parent);
+                    newDiv('fiveDaysLabel', forecast);
+                    $('fiveDaysLabel').innerText = 'Vorhersage';
+
+                    // 5-Tage-Kacheln
+                    newDiv('fiveDayWrapper', forecast);
+
+                    for (var i = 0; i < 6; i++) {
+                        newDiv('day' + i, fiveDayWrapper);
+                        $('day' + i).className = 'days';
+                        newDiv('upperDay' + i, $('day' + i));
+                        $('upperDay' + i).className = 'dayInner';
+                        newDiv('middleDay' + i, $('day' + i));
+                        $('middleDay' + i).className = 'dayInner';
+                        newDiv('lowerDay' + i, $('day' + i));
+                        $('lowerDay' + i).className = 'dayInner';
+                        var imgSun = document.createElement('img');
+                        imgSun.id = 'imgSun';
+                        imgSun.src = 'sun.png';
+                        imgSun.height = '30';
+                        imgSun.width = '30';
+                        $('middleDay' + i).appendChild(imgSun);
+                        $('lowerDay' + i).innerText = '13°';
+                    }
+
+
+
+                    // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
+                    for (var i = 0; i < 5; i++) {
+                        $('day' + i).addEventListener('click', function () {
+                            var allButtons = document.getElementsByClassName('days');
+                            for (var i = 0; i < allButtons.length; i++) {
+                                allButtons[i].style.backgroundColor = 'lightgrey';
+                            }
+                            this.style.backgroundColor = 'white';
+                        });
+                    }
+
+                    newDiv('dailyForecastWrapper', $("forecast"));
+
+                    // die folgenden 5 Tage für Vorschau auswählen
+                    var weekDays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+                    days.forEach((value, index) => {
+                        $("upperDay" + (index)).textContent = weekDays[(convertWeekDay(value[0].dt))]
+                    });
                 });
+
+
+            //     newDiv('hourlyData', hourlyWrapper);
+            //     newDiv('hourlyDataText', hourlyData);
+            //     $('hourlyDataText').innerText =
+            //         'Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ';
+
         }
 
         /* ----------------------- Favoriten -----------------------*/
@@ -667,9 +717,10 @@ window.addEventListener("load",
 
             // Tagesansicht mitte
             var weatherImg = document.createElement('img');
+            weatherImg.id = "weatherImg";
             weatherImg.src = 'sun.png';
-            newDiv('weatherIcon', dailyMiddle);
-            weatherImg.height = '200';
+            newDiv('weatherIcon', dailyRight);
+            weatherImg.height = '50';
             $('weatherIcon').appendChild(weatherImg);
 
             // Tagesansicht rechte Seite
@@ -681,113 +732,12 @@ window.addEventListener("load",
 
             // Trennlinie
             newDiv('separator', parent);
-
-            // Vorhersagebereich -
-            newDiv('forecast', parent);
-            newDiv('fiveDaysLabel', forecast);
-            $('fiveDaysLabel').innerText = '5-Tage-Vorhersage';
-
-            // 5-Tage-Kacheln
-            newDiv('fiveDayWrapper', forecast);
-
-            for (var i = 0; i < 5; i++) {
-                newDiv('day' + i, fiveDayWrapper);
-                $('day' + i).className = 'days';
-                newDiv('upperDay' + i, $('day' + i));
-                $('upperDay' + i).className = 'dayInner';
-                newDiv('middleDay' + i, $('day' + i));
-                $('middleDay' + i).className = 'dayInner';
-                newDiv('lowerDay' + i, $('day' + i));
-                $('lowerDay' + i).className = 'dayInner';
-                var imgSun = document.createElement('img');
-                imgSun.id = 'imgSun';
-                imgSun.src = 'sun.png';
-                imgSun.height = '30';
-                imgSun.width = '30';
-                $('middleDay' + i).appendChild(imgSun);
-                $('lowerDay' + i).innerText = '13°';
-            }
-
-            // Gedrückten TagesButton farblich abheben und andere Buttons zurücksetzen
-            for (var i = 0; i < 5; i++) {
-                $('day' + i).addEventListener('click', function () {
-                    var allButtons = document.getElementsByClassName('days');
-                    for (var i = 0; i < allButtons.length; i++) {
-                        allButtons[i].style.backgroundColor = 'lightgrey';
-                    }
-                    this.style.backgroundColor = 'white';
-                });
-            }
-
-            newDiv('dailyForecastWrapper', forecast);
-
-            // Vorhersagebereich - Stundenansicht
-            newDiv('hourlyWrapper', dailyForecastWrapper);
-            newDiv('hourlyButtonsWrapper', hourlyWrapper);
-
-            for (var i = 0; i < 8; i++) {
-                var btn = document.createElement('button');
-                btn.id = 'hours' + i;
-                btn.className = 'hours';
-                hourlyButtonsWrapper.appendChild(btn);
-            }
-
-            // Gedrückten StundenButton farblich abheben und andere Buttons zurücksetzen
-            for (var i = 0; i < 8; i++) {
-                $('hours' + i).addEventListener('click', function () {
-                    var allButtons = document.getElementsByClassName('hours');
-                    for (var i = 0; i < allButtons.length; i++) {
-                        allButtons[i].style.backgroundColor = 'lightgrey';
-                        console.log('wetter' + dailyObj.weatherIndex);
-                    }
-                    setHourlyData(dailyObj, i); // je nach Button
-                    this.style.backgroundColor = 'white';
-                });
-            }
-
-            $('hours0').innerText = '02:00';
-            $('hours1').innerText = '05:00';
-            $('hours2').innerText = '08:00';
-            $('hours3').innerText = '11:00';
-            $('hours4').innerText = '14:00';
-            $('hours5').innerText = '17:00';
-            $('hours6').innerText = '20:00';
-            $('hours7').innerText = '23:00';
-
-            newDiv('hourlyData', hourlyWrapper);
-            newDiv('hourlyDataText', hourlyData);
-            $('hourlyDataText').innerText =
-                'Windstärke: \n Windrichtung: \n Niederschlag: \n Luftdruck: \n Bewölkung: \n Sichtbarkeit: \n Sonnenaufgang: \n Sonnenuntergang: ';
         }
         // Klassenobjekt mit allen Daten zur Vorhersage
 
-        class DayObj {
-            constructor(wkd, dailyTemp, icon, weekDailyCurve, weatherData) {
-                this.weekdayName = wkd;
-                this.dailyTemp = dailyTemp;
-                this.icon = icon;
-                this.drawDailyCurve = function () {
-                    // drawing the week overview svg curve here
-                    // using weekCurve [] filled in fetch
-                };
-                this.weatherData = weatherData;
-                this.getHourlyData = (weatherIndex) => {
-                    return "Windstärke: " + weatherData[weatherIndex][0] +
-                        " \n Windrichtung: " + weatherData[weatherIndex][1] +
-                        " \n Niederschlag: " + weatherData[weatherIndex][2] +
-                        " \n Luftdruck: " + weatherData[weatherIndex][3] +
-                        "\n Bewölkung: " + weatherData[weatherIndex][4] +
-                        "\n Sichtbarkeit: " + weatherData[weatherIndex][5] +
-                        "\n Sonnenaufgang: " + weatherData[weatherIndex][6] +
-                        " \n Sonnenuntergang: " + weatherData[weatherIndex][7];
-                }
-            }
-        };
 
 
         /* ----------------------- Custom Element -----------------------*/
-
-
         // BEI AUFRUF
         //    $('contentContainer').append(new LoginCard());
 
@@ -815,9 +765,6 @@ window.addEventListener("load",
 
                 var objTitle = document.createElement("div");
                 objTitle.id = "objTitle";
-                objTitle.textContent = this.cityName;
-                objectContainer.append(objTitle);
-
                 var objCountry = document.createElement("div");
                 objCountry.id = "objCountry";
                 objCountry.textContent = this.countryInit;
@@ -851,11 +798,6 @@ window.addEventListener("load",
 
         }
         window.customElements.define('fave-card', FaveObj);
-
-
-
-
-
 
         // function setHourlyData(obj, index) {
         //     $("hourlyDataText").innerText = obj.getHourlyData(index);

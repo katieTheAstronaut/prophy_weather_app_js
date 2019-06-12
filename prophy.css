@@ -1,4 +1,9 @@
+html{
+    height:100%;
+}
+
 body {
+    height: 100%;
     font-size: 100%;
     line-height: 1.2;
     padding: 0;
@@ -90,9 +95,7 @@ input {
     height: 1400px;
     /* background-image: url('https://images.pexels.com/photos/2088203/pexels-photo-2088203.jpeg?auto=format%2Ccompress&cs=tinysrgb&dpr=1&w=500'); */
     background-size: cover;
-    background-image: linear-gradient(-225deg, #e3fdf5 0%, #ffe6fa 100%);
     background-image: linear-gradient(to top, #a8edea 0%, #fed6e3 100%);
-    /* background: linear-gradient(rgb(214, 250, 114), rgb(16, 60, 95)90%);*/
     display: flex;
     flex-direction: column;
 }
