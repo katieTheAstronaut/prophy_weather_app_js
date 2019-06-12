@@ -291,6 +291,8 @@ window.addEventListener("load",
                 // angelegt und zum Startbildschirm weitergeleitet. 
                 localStorage.setItem(username, JSON.stringify(user));
                 localStorage.setItem("currentUser", username);
+
+                location.reload();
                 clearScreen();
                 callHomeScreen();
             }
@@ -327,6 +329,7 @@ window.addEventListener("load",
                         // aktueller Nutzer abgespeichert und der Startbildschirm
                         // wird wieder aufgerufen
                         localStorage.setItem("currentUser", username);
+                        location.reload();
                         clearScreen();
                         callHomeScreen();
                     } else {
@@ -346,6 +349,7 @@ window.addEventListener("load",
         // Funktion zum Löschen der eigenen Nutzerdaten
         function deleteUser() {
             localStorage.removeItem(loggedInUser);
+
         }
 
         function getData(fav) {
@@ -400,11 +404,19 @@ window.addEventListener("load",
             $("sunRise").textContent = "Sonnenaufgang: " + convertTime(data.sys.sunrise) + " Uhr";
             $("sunSet").textContent = "Sonnenuntergang: " + convertTime(data.sys.sunset) + " Uhr";
             $("description").textContent = data.weather[0].description;
-            $("currentTime").textContent = convertTime(data.dt) + " Uhr";
+            var currentTimeStamp = new Date();
+            var minutes = currentTimeStamp.getMinutes();
+
+            console.log(minutes, minutes.length)
+            if (JSON.stringify(minutes).length < 2) {
+                minutes = "0" + minutes;
+            }
+            $("currentTime").textContent = currentTimeStamp.getHours() + ":" + minutes + " Uhr";
+            $("updateTime").textContent = convertTime(data.dt) + " Uhr (zuletzt aktualisiert)";
             $("currentDate").textContent = convertDate(data.dt);
             $("cityName").textContent = data.name;
             $("countryName").textContent = data.sys.country;
-            $("weatherImg").src = "http://openweathermap.org/img/w/" + data.weather[0].icon + ".png"
+            $("weatherImg").src = "http://openweathermap.org/img/w/" + data.weather[0].icon + ".png";
 
             currentDayval = convertDate(data.dt);
 
@@ -562,7 +574,7 @@ window.addEventListener("load",
                 var hourLeftCont = document.createElement("div");
                 hourLeftCont.id = "hourLeftCont";
                 container.append(hourLeftCont);
-                
+
                 var hourTitle = document.createElement("div");
                 hourTitle.className = "hourTitle";
                 hourTitle.textContent = convertTime(this.hour.dt);
@@ -577,6 +589,12 @@ window.addEventListener("load",
                 hourdesc.id = "hourdesc";
                 hourdesc.textContent = this.hour.weather[0].description;
                 hourLeftCont.append(hourdesc);
+
+                var hourIcon = document.createElement("img");
+                hourIcon.id = "hourIcon";
+                hourIcon.src = "http://openweathermap.org/img/w/" + this.hour.weather[0].icon + ".png";
+                hourLeftCont.append(hourIcon);
+
 
                 var hourInnerCont = document.createElement("div");
                 hourInnerCont.id = "hourInnerCont";
@@ -659,6 +677,7 @@ window.addEventListener("load",
             if (ifAddNeccessary && id !== null) {
                 user.favorites.push(id)
                 localStorage.setItem(loggedInUser, JSON.stringify(user))
+
             }
         }
 
@@ -716,7 +735,6 @@ window.addEventListener("load",
             newDiv("profileMenu", $("navWrapper"));
             $("profileMenu").addEventListener("click", function () {
                 openMenu();
-                console.log("got clicked");
             });
             var menuIcon = document.createElement("img");
             menuIcon.id = "menuIcon";
@@ -736,6 +754,7 @@ window.addEventListener("load",
             newDiv("logoutBtn", $("navWrapper"));
             $("logoutBtn").addEventListener("click", function () {
                 localStorage.removeItem("currentUser");
+                location.reload();
                 callHomeScreen();
             });
             var logoutIcon = document.createElement("img");
@@ -761,7 +780,13 @@ window.addEventListener("load",
                 // Menüelement zum Ändern der Nutzerdaten
                 newDiv("navMenu", $("parentDiv"));
                 newDiv("editProfile", $("navMenu"));
+
+                // Nutzerdaten ändern
                 $("editProfile").textContent = "Profil bearbeiten"
+                $("editProfile").addEventListener("click", function () {
+                    clearScreen();
+                    callUserEditScreen();
+                });
 
                 // Menüelement zum Löschen des aktuellen Nutzerkontos
                 newDiv("deleteUser", $("navMenu"));
@@ -769,13 +794,102 @@ window.addEventListener("load",
                 $("deleteUser").addEventListener("click", function () {
                     deleteUser();
                     localStorage.removeItem("currentUser");
-                    callHomeScreen();
+
                 });
             } else {
                 closeMenu();
             }
 
             menuIsClosed = !menuIsClosed;
+
+        }
+
+        function callUserEditScreen() {
+            clearScreen();
+
+            var parent = $("parentDiv");
+            newDiv("editWrapper", parent);
+            newDiv("editMsg", editWrapper);
+            $("editMsg").textContent = "Ändere deine Nutzerdaten!";
+            newDiv("editContainer", editWrapper);
+            newDiv("editTitleWrapper", editContainer);
+            newDiv("editTitle", editTitleWrapper);
+            $("editTitle").textContent = "Nutzerdaten";
+
+            // Eingabefeld für Nutzername
+            newDiv("editUserCont", editContainer);
+            var editUser = document.createElement("input");
+            editUser.type = "text";
+            editUser.id = "editUser";
+            editUser.required = true;
+            editUser.placeholder = "Nutzer: " + loggedInUser;
+            editUserCont.appendChild(editUser);
+
+            // Eingabefeld für Passwort
+            var editPw = document.createElement("input");
+            editPw.type = "text";
+            editPw.id = "editPw";
+            editPw.required = true;
+            var user = JSON.parse(localStorage.getItem(loggedInUser))
+            editPw.placeholder = "Passwort: " + user.password;
+            editUserCont.appendChild(editPw);
+
+            // Login-Button
+            var editBtn = document.createElement("button");
+            editBtn.id = "editBtn";
+            editBtn.textContent = "Änderungen speichern";
+            editBtn.addEventListener("click", function () {
+
+                // Nutzername nicht in Benutzung
+                if (localStorage.getItem($("editUser").value) === null) {
+
+                    // Passwort angegeben
+                    if ($("editPw").value.length > 0) {
+                        var user = JSON.parse(localStorage.getItem(localStorage.getItem("currentUser")));
+                        user.password = $("editPw").value;
+                        user.username = $("editUser").value
+                        localStorage.removeItem(localStorage.getItem("currentUser"));
+                        localStorage.setItem("currentUser", user.username)
+                        user = JSON.stringify(user);
+                        localStorage.setItem(localStorage.getItem("currentUser"), user)
+
+
+                        callHomeScreen();
+                        location.reload();
+
+                        // kein Passwort angegeben
+                    } else {
+                        alert("Du musst ein Passwort angeben!");
+                    }
+
+                    // Nutzername in Benutzung
+                } else {
+                    var user = localStorage.getItem($("editUser").value)
+                    user = JSON.parse(user);
+
+                    // Nutzername gleich wie angemeldeter Nutzer
+                    if (user.username === localStorage.getItem("currentUser")) {
+
+                        // Passwort gleich, nix geändert
+                        if (user.password === $("editPw").value) {
+                            alert("Du musst ein neues Passwort angeben!")
+
+                            // Name gleich und Passwort anders --> aktualisieren
+                        } else {
+                            user.password = $("editPw").value;
+                            user = JSON.stringify(user);
+                            localStorage.setItem(localStorage.getItem("currentUser"), user)
+
+                            callHomeScreen();
+                            location.reload();
+                        }
+                    }else{
+                        alert("Nutzername in Verwendung!")
+                    }
+                }
+            })
+            editUserCont.appendChild(editBtn);
+
 
         }
 
@@ -822,6 +936,7 @@ window.addEventListener("load",
             // Tagesansicht rechte Seite
             newDiv('currentDate', dailyRight);
             newDiv('currentTime', dailyRight);
+            newDiv('updateTime', dailyRight);
             newDiv('description', dailyRight);
             newDiv('degrees', dailyRight);
             $('degrees').innerText = '0';
@@ -878,6 +993,11 @@ window.addEventListener("load",
                 objectContainer.append(objDescr);
 
                 var deleteBtn = document.createElement("div");
+                deleteBtn.addEventListener("click", event => {
+                    removeFavorite(this.cityId)
+                    this.remove();
+
+                });
                 deleteBtn.id = "deleteBtn";
                 this.objBox.append(deleteBtn);
 
@@ -894,7 +1014,25 @@ window.addEventListener("load",
 
 
         }
+
         window.customElements.define('fave-card', FaveObj);
+
+        async function removeFavorite(id) {
+            var username = localStorage.getItem("currentUser");
+            var user = localStorage.getItem(username);
+            user = JSON.parse(user);
+            // user.favorites 
+            var deleted = false;
+            for (let i = 0; i < user.favorites.length && !deleted; i++) {
+                if (user.favorites[i] === id) {
+                    user.favorites.splice(i, 1);
+                    deleted = true;
+                }
+            }
+
+            localStorage.setItem(username, await JSON.stringify(user))
+
+        }
 
         // function setHourlyData(obj, index) {
         //     $("hourlyDataText").innerText = obj.getHourlyData(index);
@@ -954,7 +1092,5 @@ window.addEventListener("load",
                 parentNode.removeChild(parentNode.firstChild);
             }
         }
-
-
 
     });
